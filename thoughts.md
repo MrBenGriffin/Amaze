@@ -18,6 +18,7 @@ So, each room will have a doorway (or not) to it's neighbour, and on both sides,
 -- Let's NOT have one-way doors, for the time being at least! So, all doorways are both exits/entrances.
 
 So, a 4 by 4 set of cells can be represented ascii-wise as follows:
+````
 +-+-+-+-+
 |   |   |
 +-+ + +-+
@@ -27,7 +28,7 @@ So, a 4 by 4 set of cells can be represented ascii-wise as follows:
 + + +-+ +
 | |   | |
 +-+-+-+-+
-
+````
 Let's make the maze traversable - ie, no cell is inaccessible.
 
 

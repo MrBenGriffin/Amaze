@@ -1,6 +1,5 @@
 # encoding: utf-8
-from Maze.cell import Dim, Cell
-from Maze.wall import Orientation, Wall
+from wall import Wall
 
 """
     Maze is created as a rectangle of x * y cells

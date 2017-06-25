@@ -1,6 +1,6 @@
 # encoding: utf-8
-from Maze import Dim, Cell
-from Maze import Orientation, Wall
+from Maze.cell import Dim, Cell
+from Maze.wall import Orientation, Wall
 
 """
 Maze is created as a rectangle of x * y cells
@@ -15,7 +15,7 @@ class Maze:
         self.ew_walls = [[Wall(Orientation.EW, False) for i in range(self.y)] for j in range(self.x + 1)]
         self.cells = [[Cell(Dim(i, j), self.ns_walls, self.ew_walls) for j in range(self.y)] for i in range(self.x)]
 
-    def __str__(self):
+    def __str__(self):   # __str__ method here is just for easy visualisation purposes.
         line = "\n"
         for i in range(self.x):
             line += "╋%s" % self.ns_walls[i][self.y]

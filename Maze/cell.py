@@ -1,4 +1,5 @@
 # encoding: utf-8
+from enum import Enum
 
 """
     Dim represents an integer x,y dimension.
@@ -11,24 +12,62 @@
 """
 
 
+class Com(Enum):
+    N = 'N'
+    S = 'S'
+    E = 'E'
+    W = 'W'
+
+
+class Cell:
+    def __init__(self, dim, wns, wew):
+        self.rune = None  # No rune on initialisation.
+        self.dim = dim
+        self.walls = {Com.N: wns[dim.x][dim.y + 1],
+                      Com.S: wns[dim.x][dim.y],
+                      Com.E: wew[dim.x + 1][dim.y],
+                      Com.W: wew[dim.x][dim.y]}
+        """"
+        OMG all back to front. 
+        So, my wall to the North, sees me as being in the South, right?
+        etc. etc.
+        """
+        self.walls[Com.N].set_cell(self, Com.S)
+        self.walls[Com.S].set_cell(self, Com.N)
+        self.walls[Com.E].set_cell(self, Com.W)
+        self.walls[Com.W].set_cell(self, Com.E)
+
+    def name(self):
+        return self.dim
+
+    def exits(self):
+        exits = {}
+        for key, wall in self.walls.items():
+            if not wall.is_solid():
+                exits[key] = wall
+        return exits
+
+    def make_door(self, com, kind=None):
+        self.walls[com].make_door(kind)
+
+    def change_rune(self, the_rune=None):    # Returns any key currently here. Accepts a key if one is passed.
+        result = self.rune
+        self.rune = the_rune
+        return result
+
+    def __str__(self):  # Just draw what's on the floor. Walls draw themselves.
+        if self.rune is None:
+            return " "
+        return self.rune
+
+
 class Dim:
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
-    def show(self):
+    def __str__(self):
         return "(%s, %s)" % (self.x, self.y)
 
 
-class Cell:
-    def __init__(self, dim, wns, wew):
-        self.dim = dim
-        self.n = wns[dim.x][dim.y+1]
-        self.s = wns[dim.x][dim.y]
-        self.e = wew[dim.x+1][dim.y]
-        self.w = wew[dim.x][dim.y]
-        self.n.set_cell(self, True)
-        self.s.set_cell(self, False)
-        self.e.set_cell(self, True)
-        self.w.set_cell(self, False)
 

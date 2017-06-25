@@ -1,4 +1,5 @@
 from Maze.maze import Maze
+from Maze.wall import Com
 from InitialMenu import menu
 
 
@@ -7,13 +8,19 @@ def maze():
     # and show() currently just shows the state of each room separately..
     the_maze = Maze(8, 6)
 
-    #  Test that we can make doors.
-    #             X  Y
-    the_maze.ns_walls[0][1].make_door()
-    the_maze.ew_walls[1][0].make_door()
-    the_maze.ns_walls[2][1].make_door()
+    #  Add some doors, put a rune down..
+    the_maze.make_door(0, 0, Com.S)  # I want Out!! No...
+    the_maze.make_door(0, 0, Com.N)
+    the_maze.make_door(0, 0, Com.E)
+    the_maze.make_door(1, 0, Com.E)
+    the_maze.make_door(1, 0, Com.N)
+    the_maze.make_door(1, 1, Com.E)
+    the_maze.make_door(1, 1, Com.N, 'a')  # Rune door. Needs the rune 'A'.
+    the_maze.change_rune(0, 1, 'a')  # Put a rune onto the floor of room 0, 0
 
     #  Bad maze! But at least we can knock walls out.
+    exits = the_maze.exits(1, 1)  # {<Com.N: 'N'>: [a], <Com.S: 'S'>: [ ], <Com.E: 'E'>: [ ]}
+    print(exits)
 
     #  Display the maze.
     print(the_maze)
@@ -22,6 +29,5 @@ def maze():
 
 
 if __name__ == "__main__":
-    menu(maze)
-
+    menu(maze)  #
 

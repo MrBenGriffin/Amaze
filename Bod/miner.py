@@ -16,11 +16,14 @@ class Miner:
         (4)     ... and it it can be dug, dig it and move there, marking where I've come from, and go to (1)
         (6) continue the good work from my previous cell..
 
+    This is a nice bit of tail-recursion, so there is absolutely no reason why Python should balk, as tail-recursion
+    can be optimised very easily by modern static analysis.
+
     """
 
     def dig(self, this_cell):
         walls_to_dig = this_cell.walls_that_can_be_dug()
-        if len(walls_to_dig) > 0:
+        if walls_to_dig:
             walls_list = list(walls_to_dig)
             random.shuffle(walls_list)      # Interesting to see what happens when this line is commented out.
             for the_wall in walls_list:

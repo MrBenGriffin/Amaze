@@ -44,12 +44,13 @@ class Wall:
         else:
             self.door = kind
 
-    def make_door(self, kind=None):  # There is no edge escape from the Maze...
+    def make_door(self, cell, kind=None):  # There is no edge escape from the Maze...
         if not self.is_edge():
             if kind is None:
                 self.door = " "
             else:
                 self.door = kind
+        return self.other(cell)
 
     def make_solid(self):
         if self.orientation == Orientation.NS:
@@ -63,11 +64,31 @@ class Wall:
     def set_cell(self, cell, com):
         self.cells[com] = cell
 
+    def other(self, cell):
+        if self.orientation == Orientation.NS:
+            if self.cells[Com.N] == cell:
+                return self.cells[Com.S]
+            else:
+                return self.cells[Com.N]
+        else:
+            if self.cells[Com.E] == cell:
+                return self.cells[Com.W]
+            else:
+                return self.cells[Com.E]
+
     def is_edge(self):  # If on the edge, then one of my wall cells will be None.
         if self.orientation == Orientation.NS:
             return (self.cells[Com.N] is None) or (self.cells[Com.S] is None)
         else:
             return (self.cells[Com.W] is None) or (self.cells[Com.E] is None)
+
+    def can_be_dug(self):
+        if self.is_edge():
+            return False
+        if self.orientation == Orientation.NS:
+            return (not self.cells[Com.N].mined) or (not self.cells[Com.S].mined)
+        else:
+            return (not self.cells[Com.W].mined) or (not self.cells[Com.E].mined)
 
     def __str__(self):
         return self.door

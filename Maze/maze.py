@@ -1,6 +1,6 @@
 # encoding: utf-8
-from wall import Wall, Orientation
-from cell import Cell, Dim
+from Maze.wall import Wall, Orientation
+from Maze.cell import Cell, Dim
 
 """
     Maze is created as a rectangle of x * y cells
@@ -16,13 +16,22 @@ class Maze:
         self.cells = [[Cell(Dim(i, j), self.ns_walls, self.ew_walls) for j in range(self.y)] for i in range(self.x)]
 
     def make_door(self, x, y, com, kind=None):
-        self.cells[x][y].make_door(com, kind)
+        return self.cells[x][y].make_door(com, kind)
+
+    def set_mined(self, x, y, dim):
+        self.cells[x][y].set_mined(dim)
+
+    def get_mined(self, x, y):
+        return self.cells[x][y].get_mined()
 
     def change_rune(self, x, y, the_rune=None):
         return self.cells[x][y].change_rune(the_rune)
 
     def exits(self, x, y):  # Given a cell (as x,y), return all the exits available.
         return self.cells[x][y].exits()
+
+    def digs(self, x, y):  # Given a cell (as x,y), return all the dig-able walls available.
+        return self.cells[x][y].digs()
 
     def __str__(self):   # __str__ method here is just for easy visualisation purposes.
         line = "\n"

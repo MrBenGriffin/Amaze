@@ -22,6 +22,7 @@ class Com(Enum):
 class Cell:
     def __init__(self, dim, wns, wew):
         self.rune = None  # No rune on initialisation.
+        self.mined = None
         self.dim = dim
         self.walls = {Com.N: wns[dim.x][dim.y + 1],
                       Com.S: wns[dim.x][dim.y],
@@ -40,6 +41,12 @@ class Cell:
     def name(self):
         return self.dim
 
+    def set_mined(self, dim):
+        self.mined = dim
+
+    def get_mined(self):
+        return self.mined
+
     def exits(self):
         exits = {}
         for key, wall in self.walls.items():
@@ -47,13 +54,23 @@ class Cell:
                 exits[key] = wall
         return exits
 
+    def digs(self):
+        digs = {}
+        for key, wall in self.walls.items():
+            if wall.can_be_dug():
+                digs[key] = wall
+        return digs
+
     def make_door(self, com, kind=None):
-        self.walls[com].make_door(kind)
+        return self.walls[com].make_door(self, kind)
 
     def change_rune(self, the_rune=None):    # Returns any key currently here. Accepts a key if one is passed.
         result = self.rune
         self.rune = the_rune
         return result
+
+    def __cmp__(self, other):
+        return self.dim.x == other.dim.x and self.dim.y == other.dim.y
 
     def __str__(self):  # Just draw what's on the floor. Walls draw themselves.
         if self.rune is None:

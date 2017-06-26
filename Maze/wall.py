@@ -50,7 +50,9 @@ class Wall:
                 self.door = " "
             else:
                 self.door = kind
-        return self.other(cell)
+        other = self.other(cell)
+        other.set_mined()
+        return other
 
     def make_solid(self):
         if self.orientation == Orientation.NS:
@@ -59,7 +61,7 @@ class Wall:
             self.door = "┃"
 
     def is_solid(self):
-        return self.door == "━" or self.door == "┃"
+        return self.is_edge() or self.door == "━" or self.door == "┃"
 
     def set_cell(self, cell, com):
         self.cells[com] = cell
@@ -67,14 +69,15 @@ class Wall:
     def other(self, cell):
         if self.orientation == Orientation.NS:
             if self.cells[Com.N] == cell:
-                return self.cells[Com.S]
+                result = self.cells[Com.S]
             else:
-                return self.cells[Com.N]
+                result = self.cells[Com.N]
         else:
             if self.cells[Com.E] == cell:
-                return self.cells[Com.W]
+                result = self.cells[Com.W]
             else:
-                return self.cells[Com.E]
+                result = self.cells[Com.E]
+        return result
 
     def is_edge(self):  # If on the edge, then one of my wall cells will be None.
         if self.orientation == Orientation.NS:
@@ -86,9 +89,9 @@ class Wall:
         if self.is_edge():
             return False
         if self.orientation == Orientation.NS:
-            return (not self.cells[Com.N].mined) or (not self.cells[Com.S].mined)
+            return (not self.cells[Com.N].is_mined()) or (not self.cells[Com.S].is_mined())
         else:
-            return (not self.cells[Com.W].mined) or (not self.cells[Com.E].mined)
+            return (not self.cells[Com.W].is_mined()) or (not self.cells[Com.E].is_mined())
 
     def __str__(self):
         return self.door

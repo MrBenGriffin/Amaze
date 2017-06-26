@@ -2,10 +2,11 @@ import os
 from Maze.maze import Maze
 from Bod.miner import Miner
 
+
 def maze():
     the_maze = Maze(80, 10)
-    the_miner = Miner(the_maze, 0, 0)
-    the_miner.dig()
+    the_miner = Miner()
+    the_miner.dig(the_maze.cell(0, 0))
     print(the_maze)
 
 

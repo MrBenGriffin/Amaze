@@ -1,6 +1,5 @@
 # encoding: utf-8
 from enum import Enum
-from tkinter import Canvas
 
 """
     Dim represents an integer x,y dimension.
@@ -22,7 +21,7 @@ class Com(Enum):
 
 class Cell:
     lo = 0
-    hi = 20
+    hi = 12
     solids = {
         Com.N: (hi, hi, lo, hi),  # TK is weird. 0,0 is at the TOP left of the screen.
         Com.W: (lo, hi, lo, lo),  # So we are going to have to rotate our stuff 180°
@@ -32,8 +31,8 @@ class Cell:
 
     def __init__(self, dim, wns, wew):
         self.rune = None  # No rune on initialisation.
-        self.mined = None
         self.dim = dim
+        self.mined = False
         self.walls = {Com.N: wns[dim.x][dim.y + 1],
                       Com.E: wew[dim.x + 1][dim.y],
                       Com.S: wns[dim.x][dim.y],
@@ -47,15 +46,28 @@ class Cell:
         self.walls[Com.E].set_cell(self, Com.W)
         self.walls[Com.S].set_cell(self, Com.N)
         self.walls[Com.W].set_cell(self, Com.E)
+        self.sols = {}
+        for k, v in Cell.solids.items():
+            self.sols[k] = tuple(i + j for i, j in
+                                 zip(
+                                     v,
+                                     (
+                                         Cell.hi + Cell.hi * dim.x,
+                                         Cell.hi + Cell.hi * dim.y,
+                                         Cell.hi + Cell.hi * dim.x,
+                                         Cell.hi + Cell.hi * dim.y
+                                     )
+                                 )
+                                 )
+
+    def set_mined(self):
+        self.mined = True
+
+    def is_mined(self):
+        return self.mined
 
     def name(self):
         return self.dim
-
-    def set_mined(self, dim):
-        self.mined = dim
-
-    def get_mined(self):
-        return self.mined
 
     def exits(self):
         result = {}
@@ -79,13 +91,10 @@ class Cell:
         self.rune = the_rune
         return result
 
-    def tk_draw(self, parent):     # This method is really quite slow when dealing with lots of cells.
-        canvas = Canvas(parent, width=20, height=20, highlightthickness=0)
+    def tk_paint(self, canvas):  # This method will double-draw ALL internal walls..
         for key, wall in self.walls.items():
             if wall.is_solid():
-                canvas.create_line(self.solids[key], width=3)
-                canvas.create_text(8, 11, text=self.dim, font=("Courier", 8), fill="gray")
-        return canvas
+                canvas.create_line(self.sols[key], width=2)
 
     def __cmp__(self, other):
         return self.dim.x == other.dim.x and self.dim.y == other.dim.y

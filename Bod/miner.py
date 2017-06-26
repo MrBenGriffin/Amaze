@@ -3,25 +3,29 @@ import random
 
 
 class Miner:
-    def __init__(self, maze, x, y):
-        self.x = x
-        self.y = y
-        self.maze = maze    # Each cell has a property 'mined' which is whether or not the miner has visited.
-        self.maze.set_mined(self.x, self.y, Dim(None, None))
+    """
+    Miner is  a simple solitary random walk algorithm.
+    The miner starts at a cell in the mine, then chooses a wall to knock down.
+    Mining Rule #1 is that he cannot knock down a wall into a pre-visited cell.
+    When he gets to a dead end (all the surrounding cells are visited or are edges) then
+    he backtracks to the previous cell he visited.
 
-    def dig(self):
-        digs = self.maze.digs(self.x, self.y)
-        if len(digs) != 0:
-            dirs = list(digs)
-            random.shuffle(dirs)
-            for dig in dirs:
-                if digs[dig].can_be_dug():
-                    cell = self.maze.make_door(self.x, self.y, dig)
-                    was = Dim(self.x, self.y)
-                    self.x = cell.dim.x
-                    self.y = cell.dim.y
-                    self.maze.set_mined(self.x, self.y, was)
-                    self.dig()
-        prev = self.maze.get_mined(self.x, self.y)
-        self.x = prev.x
-        self.y = prev.y
+    So.
+        (1) Get a dict of walls that I can dig from my current cell.
+        (2) If the dict isn't empty, shuffle the list (actually just the keys).
+        (3) ... and then for each, check it still can be dug (because we are recursive).
+        (4)     ... and it it can be dug, dig it and move there, marking where I've come from, and go to (1)
+        (6) continue the good work from my previous cell..
+
+    """
+
+    def dig(self, cell):
+        walls_to_dig = cell.digs()
+        if len(walls_to_dig) > 0:
+            walls_list = list(walls_to_dig)
+            random.shuffle(walls_list)
+            for wall in walls_list:
+                if walls_to_dig[wall].can_be_dug():
+                    next_cell = cell.make_door(wall)
+                    self.dig(next_cell)
+

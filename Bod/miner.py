@@ -22,7 +22,7 @@ class Miner:
         walls_to_dig = this_cell.walls_that_can_be_dug()
         if len(walls_to_dig) > 0:
             walls_list = list(walls_to_dig)
-            random.shuffle(walls_list)
+            random.shuffle(walls_list)      # Interesting to see what happens when this line is commented out.
             for the_wall in walls_list:
                 if walls_to_dig[the_wall].can_be_dug():
                     next_cell = this_cell.make_door_in(the_wall)

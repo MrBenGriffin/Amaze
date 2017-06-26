@@ -76,12 +76,12 @@ class Cell:
                 result[key] = wall
         return result
 
-    def digs(self):
-        result = {}
+    def walls_that_can_be_dug(self):
+        dict_of_walls = {}
         for key, wall in self.walls.items():
             if wall.can_be_dug():
-                result[key] = wall
-        return result
+                dict_of_walls[key] = wall
+        return dict_of_walls
 
     def make_door_in(self, com, kind=None):
         return self.walls[com].make_door(self, kind)

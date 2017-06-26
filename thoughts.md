@@ -40,8 +40,7 @@ either 'solid' or 'doorway'.
 So we have some sort of 'wall' object that is drawable..
 And then we have some sort of 'cell' object that refers to four walls.
 
-
-
+so we have a digger...
 
 
 Bla bla bla .. later on.

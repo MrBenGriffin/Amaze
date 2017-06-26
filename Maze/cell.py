@@ -83,7 +83,7 @@ class Cell:
                 result[key] = wall
         return result
 
-    def make_door(self, com, kind=None):
+    def make_door_in(self, com, kind=None):
         return self.walls[com].make_door(self, kind)
 
     def change_rune(self, the_rune=None):  # Returns any key currently here. Accepts a key if one is passed.

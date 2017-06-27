@@ -4,9 +4,6 @@ Simple fun learning project.
 ```By Ben & Tay```
 
 ## So far:
-Some basic classes have been written.
-These include 'wall' and 'cell', as well as some trivial
-enums.
 
 main.py also is being used to test them out. 
 Currently I'm not planning on adding unit tests. 
@@ -14,6 +11,9 @@ Maybe one day.
 
 ## Todo:
 We should have a graphic front-end at some point.
+So, out of basic simple reasons, I chose tkinter.
+
+!(maze.png)
 
 We need a mover class - with two subclasses:
 Digger/Miner    - who constructs the maze (and leaves runes lying around)

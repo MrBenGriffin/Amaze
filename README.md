@@ -13,7 +13,7 @@ Maybe one day.
 We should have a graphic front-end at some point.
 So, out of basic simple reasons, I chose tkinter.
 
-!(maze.png)
+![Maze](maze.png)
 
 We need a mover class - with two subclasses:
 Digger/Miner    - who constructs the maze (and leaves runes lying around)

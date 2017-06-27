@@ -4,14 +4,10 @@ Simple fun learning project.
 ```By Ben & Tay```
 
 ## So far:
-
-main.py also is being used to test them out. 
-Currently I'm not planning on adding unit tests. 
-Maybe one day.
+Currently I'm not planning on adding unit tests.  Maybe one day.
 
 ## Todo:
-We should have a graphic front-end at some point.
-So, out of basic simple reasons, I chose tkinter.
+So, out of basic simple reasons, I chose tkinter as a gfx fe.
 
 ![Maze](maze.png)
 

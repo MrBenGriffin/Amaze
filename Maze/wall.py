@@ -1,6 +1,7 @@
 # encoding: utf-8
+from typing import Optional
 from enum import Enum
-from Maze.cell import Com
+from Maze.cell import Com, Cell, Dim
 
 """"
     Not knowing anything about Python, here is a simple Wall class that
@@ -13,38 +14,35 @@ from Maze.cell import Com
 """
 
 
+class Orientation(Enum):
+    NS = True
+    EW = False
+
+
 class Wall:
-    """
-    Huh?, you may well ask. what is self.cells and how does a wall relate to four cells?!
-    In brief, it's the cells either side of the wall, and two will remain undefined.
-    So, we are currently using a grid/2d-array of cells..
-    But each wall is in another array, so that we can share walls with cells.
 
-    +-----+-----+--- <--- N for row 1, S for row 2
-    | 0,1 | 1,1 | 2,1
-    |<W E>|<W E>|<--west
-    +-----+-----+--  <--- N for row 0, S for row 1
-    | 0,0 | 1,0 | 2,0
-    |<W E>|<W E>|<--east
-    +-----+-----+--  <--- No.N (edge), S for row 0.
+    solids = {
+        Orientation.NS: Cell.solids[Com.S],
+        Orientation.EW: Cell.solids[Com.W]
+    }
 
-    Now all of this may be one complete waste of time..
-    All I am trying to do is to find a way of capturing the basic structure of a maze...
-    """
-
-    def __init__(self, orientation=None, kind=None):
+    def __init__(self, orientation, x, y):
+        self.dim = Dim(x, y)
+        self.door = "▦"
         self.cells = {Com.N: None, Com.S: None, Com.E: None, Com.W: None}
-        if orientation is None:
-            self.orientation = Orientation.NS
-        else:
-            self.orientation = orientation
+        self.orientation = orientation
 
-        if kind is None:
-            self.make_solid()
-        else:
-            self.door = kind
+        self.solid = tuple(i + j for i, j in zip(
+            Wall.solids[self.orientation],
+            (
+                Cell.size + Cell.size * self.dim.x,
+                Cell.size + Cell.size * self.dim.y,
+                Cell.size + Cell.size * self.dim.x,
+                Cell.size + Cell.size * self.dim.y
+            )
+        ))
 
-    def make_door(self, cell, kind=None):  # There is no edge escape from the Maze...
+    def make_door(self, cell, kind=None) -> Optional[Cell]:  # edges are None
         if not self.is_edge():
             if kind is None:
                 self.door = " "
@@ -55,37 +53,34 @@ class Wall:
         return other
 
     def make_solid(self):
-        if self.orientation == Orientation.NS:
-            self.door = "━"
-        else:
-            self.door = "┃"
+        self.door = "▦"
 
-    def is_solid(self):
-        return self.is_edge() or self.door == "━" or self.door == "┃"
+    def is_solid(self) -> bool:
+        return self.is_edge() or self.door == "▦"
 
-    def set_cell(self, cell, com):
+    def set_cell(self, cell, com) -> None:
         self.cells[com] = cell
 
-    def other(self, cell):
+    def other(self, cell) -> Optional[Cell]:
+        """ Edges have no cell on the other side, so will return None """
         if self.orientation == Orientation.NS:
             if self.cells[Com.N] == cell:
-                result = self.cells[Com.S]
+                return self.cells[Com.S]
             else:
-                result = self.cells[Com.N]
+                return self.cells[Com.N]
         else:
             if self.cells[Com.E] == cell:
-                result = self.cells[Com.W]
+                return self.cells[Com.W]
             else:
-                result = self.cells[Com.E]
-        return result
+                return self.cells[Com.E]
 
-    def is_edge(self):  # If on the edge, then one of my wall cells will be None.
+    def is_edge(self) -> bool:  # If on the edge, then one of my wall cells will be None.
         if self.orientation == Orientation.NS:
             return (self.cells[Com.N] is None) or (self.cells[Com.S] is None)
         else:
             return (self.cells[Com.W] is None) or (self.cells[Com.E] is None)
 
-    def can_be_dug(self):
+    def can_be_dug(self) -> bool:
         if self.is_edge():
             return False
         if self.orientation == Orientation.NS:
@@ -93,13 +88,18 @@ class Wall:
         else:
             return (not self.cells[Com.W].is_mined()) or (not self.cells[Com.E].is_mined())
 
+    def tk_paint(self, canvas):
+        if self.is_solid():
+            canvas.create_line(self.solid, width=2)
+
     def __str__(self):
-        return self.door
+        if self.door == "▦":
+            if self.orientation == Orientation.NS:
+                return "━"
+            return "┃"
+        else:
+            return self.door
 
     def __repr__(self):
-        return "[" + self.door + "]"
+        return "[" + self.__str__() + "]"
 
-
-class Orientation(Enum):
-    NS = True
-    EW = False

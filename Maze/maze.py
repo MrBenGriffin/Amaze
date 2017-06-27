@@ -11,25 +11,35 @@ class Maze:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.ns_walls = [[Wall(Orientation.NS) for i in range(self.y + 1)] for j in range(self.x)]
-        self.ew_walls = [[Wall(Orientation.EW) for i in range(self.y)] for j in range(self.x + 1)]
-        self.cells = [[Cell(Dim(i, j), self.ns_walls, self.ew_walls) for j in range(self.y)] for i in range(self.x)]
+        self.ns_walls = [[
+            Wall(Orientation.NS, i, j)
+            for j in range(self.y + 1)] for i in range(self.x)]
 
-    def cell(self, x, y):
+        self.ew_walls = [[
+            Wall(Orientation.EW, i, j)
+            for j in range(self.y)] for i in range(self.x + 1)]
+
+        self.cells = [[
+            Cell(Dim(i, j), self.ns_walls, self.ew_walls)
+            for j in range(self.y)] for i in range(self.x)]
+
+    def cell(self, x, y) -> Cell:
         return self.cells[x][y]
 
-    # def change_rune(self, x, y, the_rune=None):
-    #     return self.cells[x][y].change_rune(the_rune)
-    #
-    # def exits(self, x, y):  # Given a cell (as x,y), return all the exits available.
-    #     return self.cells[x][y].exits()
+    def tk_paint(self, canvas):
+        for i in range(len(self.ns_walls)):
+            for j in range(len(self.ns_walls[i])):
+                self.ns_walls[i][j].tk_paint(canvas)
+        for i in range(len(self.ew_walls)):
+            for j in range(len(self.ew_walls[i])):
+                self.ew_walls[i][j].tk_paint(canvas)
 
-    def __str__(self):   # __str__ method here is just for easy visualisation purposes.
+    def __str__(self):  # __str__ method here is just for easy visualisation purposes.
         line = "\n"
         for i in range(self.x):
             line += "╋%s" % self.ns_walls[i][self.y]
         line += "╋\n"
-        for j in reversed(range(self.y)):  # reversed because we are printing, and print goes from top to bottom..
+        for j in reversed(range(self.y)):  # reversed: print goes from top to bottom..
             for i in range(self.x):
                 line += "%s%s" % (self.ew_walls[i][j], self.cells[i][j])
 

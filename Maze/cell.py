@@ -20,13 +20,13 @@ class Com(Enum):
 
 
 class Cell:
-    lo = 0
-    hi = 12
+    zero = 0
+    size = 12
     solids = {
-        Com.N: (hi, hi, lo, hi),  # TK is weird. 0,0 is at the TOP left of the screen.
-        Com.W: (lo, hi, lo, lo),  # So we are going to have to rotate our stuff 180°
-        Com.S: (lo, lo, hi, lo),
-        Com.E: (hi, lo, hi, hi)
+        Com.N: (size, size, zero, size),  # TK is weird. 0,0 is at the TOP left of the screen.
+        Com.W: (zero, size, zero, zero),  # So we are going to have to rotate our stuff 180°
+        Com.S: (zero, zero, size, zero),
+        Com.E: (size, zero, size, size)
     }
 
     def __init__(self, dim, wns, wew):
@@ -52,10 +52,10 @@ class Cell:
                                  zip(
                                      v,
                                      (
-                                         Cell.hi + Cell.hi * dim.x,
-                                         Cell.hi + Cell.hi * dim.y,
-                                         Cell.hi + Cell.hi * dim.x,
-                                         Cell.hi + Cell.hi * dim.y
+                                         Cell.size + Cell.size * dim.x,
+                                         Cell.size + Cell.size * dim.y,
+                                         Cell.size + Cell.size * dim.x,
+                                         Cell.size + Cell.size * dim.y
                                      )
                                  )
                                  )
@@ -63,30 +63,30 @@ class Cell:
     def set_mined(self):
         self.mined = True
 
-    def is_mined(self):
+    def is_mined(self) -> bool:
         return self.mined
 
-    def name(self):
+    def name(self) -> str:
         return self.dim
 
-    def exits(self):
-        result = {}
-        for key, wall in self.walls.items():
+    def exits(self) -> dict:
+        dict_of_exits = {}
+        for compass, wall in self.walls.items():
             if not wall.is_solid():
-                result[key] = wall
-        return result
+                dict_of_exits[compass] = wall
+        return dict_of_exits
 
-    def walls_that_can_be_dug(self):
+    def walls_that_can_be_dug(self) -> dict:
         dict_of_walls = {}
-        for key, wall in self.walls.items():
+        for compass, wall in self.walls.items():
             if wall.can_be_dug():
-                dict_of_walls[key] = wall
+                dict_of_walls[compass] = wall
         return dict_of_walls
 
     def make_door_in(self, com, kind=None):
         return self.walls[com].make_door(self, kind)
 
-    def change_rune(self, the_rune=None):  # Returns any key currently here. Accepts a key if one is passed.
+    def change_rune(self, the_rune=None):  # Accepts a rune if one is passed.
         result = self.rune
         self.rune = the_rune
         return result

@@ -10,7 +10,7 @@ while True:
         print("That's not a number!")
         continue
     else:
-        print('thanks')
+        print('Thanks')
         break
 maze_height = 0
 while True:
@@ -20,7 +20,8 @@ while True:
         print("That's not a number!")
         continue
     else:
-        print('thanks')
+        print('Thanks')
+        print('Now loading maze...')
         break
 
 cell_size = Cell.size

@@ -2,6 +2,13 @@
 Simple fun learning project.
 
 ```By Ben & Tay```
+## Requires:
+Python 3
+tkinter (apt-get install python-tk on ubuntu - but may well be packaged with python)
+typing (pip3 install typing)
+
+## Launching:
+python3 ./front.py for the GUI
 
 ## So far:
 Currently I'm not planning on adding unit tests.  Maybe one day.

@@ -1,7 +1,7 @@
 # Amaze
 Simple fun learning project.
 
-```By Ben & Tay```
+```By Ben & Tay & Cheddies```
 ## Requires:
 Python 3  
 tkinter (apt-get install python-tk on ubuntu - but may well be packaged with python)  

@@ -5,49 +5,42 @@ from Bod.miner import Miner
 cell_size = Cell.size
 
 # Initialise a window
-root = Tk()
+entry = Tk()
+frame = Frame(entry)
+frame.grid(columns=2, rows=3)
 
 
 # This function pulls the sizes as defined by the Entry boxes and calls the maze
 def get_size():
-    maze_width = int(E1.get())  # grab the entry of textbox 1 as an integer
-    maze_height = int(E2.get())  # grab the entry of textbox 2 as an integer
-
-    # kill the window as it currently stands
-    root.destroy()
-
-    # make the maze
-    create_maze(maze_width, maze_height)
+    maze_width = int('0'+maze_width_entry.get())  # grab the entry of textbox 1 as an integer
+    maze_height = int('0'+maze_height_entry.get())  # grab the entry of textbox 2 as an integer
+    if maze_height and maze_width:
+        create_maze(maze_width, maze_height)
 
 # Create the text-boxes for width and height
 """valid percent substitutions for validate command (from the Tk entry man page)
 # %d = Type of action (1=insert, 0=delete, -1 for others)
 # %i = index of char string to be inserted/deleted, or -1
 # %P = value of the entry if the edit is allowed
-# %s = value of entry prior to editing
-# %S = the text string being inserted or deleted, if any
-# %v = the type of validation that is currently set
-# %V = the type of validation that triggered the callback
-#      (key, focusin, focusout, forced)
-# %W = the tk name of the widget"""
+"""
 
 # This is a simple input validation that accepts numbers between 1 and 250.
-int_checker = root.register(lambda text, i, action: action != '1' or text[int(i)].isdigit() and 0 < int(text) < 250)
+int_checker = frame.register(lambda text, i, action: action != '1' or text[int(i)].isdigit() and 0 < int(text) < 250)
 
-label1 = Label(root, text="Maze Width")    # validate=key means it checks each letter as typed
-E1 = Entry(root, bd=3, validate="key", validatecommand=(int_checker, '%P', '%i', '%d'))
-label2 = Label(root, text="Maze Height")
-E2 = Entry(root, bd=3, validate="key", validatecommand=(int_checker, '%P', '%i', '%d'))
+maze_width_label = Label(frame, text="Maze Width")    # validate=key means it checks each letter as typed
+maze_width_entry = Entry(frame, bd=3, validate="key", validatecommand=(int_checker, '%P', '%i', '%d'))
+maze_height_label = Label(frame, text="Maze Height")
+maze_height_entry = Entry(frame, bd=3, validate="key", validatecommand=(int_checker, '%P', '%i', '%d'))
 
 # Create the submit button to call the getSize function
-submit = Button(root, text="Submit", command=get_size)
+submit = Button(frame, text="Submit", command=get_size)
 
 # Add all of the text boxes and stuff to the grid
-label1.grid()
-E1.grid()
-label2.grid()
-E2.grid()
-submit.grid()
+maze_width_label.grid(row=0, column=0, sticky=E)
+maze_width_entry.grid(row=0, column=1)
+maze_height_label.grid(row=1, column=0, sticky=E)
+maze_height_entry.grid(row=1, column=1)
+submit.grid(row=2, columnspan=2)
 
 
 # Actually create the maze
@@ -55,8 +48,7 @@ def create_maze(w, h):
     root = Tk()
     # First check we are not making it with no size
     if w > 0 and h > 0:
-        canvas = Canvas(root, width=cell_size * (w + 2), height=cell_size * (h + 2),
-                    bg='gray')
+        canvas = Canvas(root, width=cell_size * (w + 2), height=cell_size * (h + 2), bg='gray')
         canvas.grid(columns=1, rows=1)
 
         the_maze = Maze(w, h)
@@ -71,4 +63,4 @@ def create_maze(w, h):
     else:
         print('We somehow got here with no width and height')
 
-root.mainloop()
+entry.mainloop()

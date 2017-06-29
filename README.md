@@ -4,7 +4,7 @@ Simple fun learning project.
 ```By Ben & Tay & Cheddies```
 ## Requires:
 Python 3  
-tkinter (apt-get install python-tk on ubuntu - but may well be packaged with python)  
+tkinter How to install( http://www.tkdocs.com/tutorial/install.html )  
 typing (pip3 install typing)
 
 ```python
@@ -13,6 +13,7 @@ Miner.dig() # Now works pretty well for a random walk.
 
 ## Launching:
 python3 ./front.py for the GUI
+python3 ./InitialMenu.py for text. (TODO: sizing options)
 
 ## So far:
 Currently I'm not planning on adding unit tests.  Maybe one day.
@@ -33,7 +34,15 @@ Total extra - add 'power runes':
 A rune can be used just once to open a rune-door.  
 One can carry only one rune at a time.   
 Running over a rune picks it up, (and drops off any currently held)  
-Rune-doors: Are they opened once opened, or do they allow a single transit?  
+Rune-doors: Are they opened once opened, or do they allow a single transit? 
+Animated miner/adventurer.
+Multiple players (sharing a keyboard of course).
+Stairs that go both up and down.
+Rooms.
+Monsters.
+Treasure.
+Nethack.... ;-D
+
  
  
  

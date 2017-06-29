@@ -60,15 +60,15 @@ class Maze:
 
     def __str__(self):  # __str__ method here is just for easy visualisation purposes.
         line = "\n"
-        for i in range(self.x):
-            line += "╋%s" % self.ns_walls[i][self.y]
+        for i in range(self.cells_across):
+            line += "╋%s" % self.ns_walls[i][self.cells_up]
         line += "╋\n"
-        for j in reversed(range(self.y)):  # reversed: print goes from top to bottom..
-            for i in range(self.x):
+        for j in reversed(range(self.cells_up)):  # reversed: print goes from top to bottom..
+            for i in range(self.cells_across):
                 line += "%s%s" % (self.ew_walls[i][j], self.cells[i][j])
 
-            line += "%s\n" % self.ew_walls[self.x][j]
-            for i in range(self.x):
+            line += "%s\n" % self.ew_walls[self.cells_across][j]
+            for i in range(self.cells_across):
                 line += "╋%s" % self.ns_walls[i][j]
 
             line += "╋\n"

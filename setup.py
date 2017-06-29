@@ -6,7 +6,7 @@ setup(
     packages=['Maze'],
     url='',
     license='',
-    author='Ben and Tay',
+    author='Ben and Tay and Cheddies',
     author_email='',
     description=''
 )

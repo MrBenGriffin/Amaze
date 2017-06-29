@@ -16,7 +16,8 @@ python3 ./front.py for the GUI
 Currently I'm not planning on adding unit tests.  Maybe one day.
 
 ## Todo:
-So, out of basic simple reasons, I chose tkinter as a gfx fe.
+So, out of basic simple reasons, I chose tkinter as a gfx fe. 
+There's stuff to love in tkinter for a project of this scale.
 
 ![Maze](maze.png)
 

@@ -34,7 +34,15 @@ Total extra - add 'power runes':
 A rune can be used just once to open a rune-door.  
 One can carry only one rune at a time.   
 Running over a rune picks it up, (and drops off any currently held)  
-Rune-doors: Are they opened once opened, or do they allow a single transit?  
+Rune-doors: Are they opened once opened, or do they allow a single transit? 
+Animated miner/adventurer.
+Multiple players (sharing a keyboard of course).
+Stairs that go both up and down.
+Rooms.
+Monsters.
+Treasure.
+Nethack.... ;-D
+
  
  
  

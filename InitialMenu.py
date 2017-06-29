@@ -1,12 +1,11 @@
-import os
 from Maze.maze import Maze
-from Bod.miner import Miner
+import Bod.miner
 
 
 def maze():
     the_maze = Maze(80, 10)
-    the_miner = Miner()
-    the_miner.dig(the_maze.cell(0, 0))
+    the_miner = Bod.miner.Miner(the_maze, 0, 0)
+    Bod.miner.Dig(#will input variables after understanding the intention of this line
     print(the_maze)
 
 

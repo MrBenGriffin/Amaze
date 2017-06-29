@@ -22,8 +22,8 @@ class Orientation(Enum):
 class Wall:
 
     solids = {
-        Orientation.NS: Cell.solids[Com.S],
-        Orientation.EW: Cell.solids[Com.W]
+        Orientation.NS: (0, 0, 1, 0),
+        Orientation.EW: (0, 1, 0, 0)
     }
 
     def __init__(self, orientation, x, y):
@@ -32,14 +32,9 @@ class Wall:
         self.cells = {Com.N: None, Com.S: None, Com.E: None, Com.W: None}
         self.orientation = orientation
 
-        self.solid = tuple(i + j for i, j in zip(
+        self.solid = tuple(10 + Cell.size * i + Cell.size * j for i, j in zip(
             Wall.solids[self.orientation],
-            (
-                Cell.size + Cell.size * self.dim.x,
-                Cell.size + Cell.size * self.dim.y,
-                Cell.size + Cell.size * self.dim.x,
-                Cell.size + Cell.size * self.dim.y
-            )
+            (self.dim.x, self.dim.y, self.dim.x, self.dim.y)
         ))
 
     def make_door(self, cell, kind=None) -> Optional[Cell]:  # edges are None

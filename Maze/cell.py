@@ -20,14 +20,7 @@ class Com(Enum):
 
 
 class Cell:
-    zero = 0
-    size = 12
-    solids = {
-        Com.N: (size, size, zero, size),  # TK is weird. 0,0 is at the TOP left of the screen.
-        Com.W: (zero, size, zero, zero),  # So we are going to have to rotate our stuff 180°
-        Com.S: (zero, zero, size, zero),
-        Com.E: (size, zero, size, size)
-    }
+    size = 20
 
     def __init__(self, dim, wns, wew):
         self.rune = None  # No rune on initialisation.
@@ -37,28 +30,10 @@ class Cell:
                       Com.E: wew[dim.x + 1][dim.y],
                       Com.S: wns[dim.x][dim.y],
                       Com.W: wew[dim.x][dim.y]}
-        """"
-        OMG all back to front. 
-        So, my wall to the North, sees me as being in the South, right?
-        etc. etc.
-        """
         self.walls[Com.N].set_cell(self, Com.S)
         self.walls[Com.E].set_cell(self, Com.W)
         self.walls[Com.S].set_cell(self, Com.N)
         self.walls[Com.W].set_cell(self, Com.E)
-        self.sols = {}
-        for k, v in Cell.solids.items():
-            self.sols[k] = tuple(i + j for i, j in
-                                 zip(
-                                     v,
-                                     (
-                                         Cell.size + Cell.size * dim.x,
-                                         Cell.size + Cell.size * dim.y,
-                                         Cell.size + Cell.size * dim.x,
-                                         Cell.size + Cell.size * dim.y
-                                     )
-                                 )
-                                 )
 
     def set_mined(self):
         self.mined = True
@@ -90,11 +65,6 @@ class Cell:
         result = self.rune
         self.rune = the_rune
         return result
-
-    def tk_paint(self, canvas):  # This method will double-draw ALL internal walls..
-        for key, wall in self.walls.items():
-            if wall.is_solid():
-                canvas.create_line(self.sols[key], width=2)
 
     def __cmp__(self, other):
         return self.dim.x == other.dim.x and self.dim.y == other.dim.y

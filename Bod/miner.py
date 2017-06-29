@@ -1,4 +1,5 @@
 import random
+from Maze.cell import Cell
 
 
 class Miner:
@@ -20,6 +21,13 @@ class Miner:
     as tail-recursion can be optimised very easily by modern static analysis.
     """
 
+    def __init__(self):
+        self.id = None
+        self.canvas = None
+        self.cell = None
+        self.size = Cell.size // 2
+        self.offset = 10 + Cell.size // 4
+
     def dig(self, this_cell):
         """ Dig a maze starting from a cell """
         walls_to_dig = this_cell.walls_that_can_be_dug()
@@ -30,3 +38,11 @@ class Miner:
                 if walls_to_dig[the_wall].can_be_dug():
                     next_cell = this_cell.make_door_in(the_wall)
                     self.dig(next_cell)
+
+    def tk_init(self, canvas):
+        self.canvas = canvas
+        self.id = canvas.create_oval(0, 0, self.size, self.size, outline='green', fill='white')
+        self.canvas.move(self.id, self.offset, self.offset)
+
+    def tk_paint(self):
+        pass

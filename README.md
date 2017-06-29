@@ -7,7 +7,9 @@ Python 3
 tkinter (apt-get install python-tk on ubuntu - but may well be packaged with python)  
 typing (pip3 install typing)
 
-
+```python
+Miner.dig() # Now works pretty well for a random walk.
+```
 
 ## Launching:
 python3 ./front.py for the GUI

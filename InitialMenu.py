@@ -1,11 +1,11 @@
+import os
 from Maze.maze import Maze
-import Bod.miner
-
+from Bod.miner import Miner
 
 def maze():
     the_maze = Maze(80, 10)
-    the_miner = Bod.miner.Miner(the_maze, 0, 0)
-    Bod.miner.Dig(#will input variables after understanding the intention of this line
+    the_miner = Miner(the_maze, 0, 0)
+    the_miner.dig()
     print(the_maze)
 
 
@@ -28,4 +28,3 @@ def menu():
 
 if __name__ == "__main__":
     menu()
-

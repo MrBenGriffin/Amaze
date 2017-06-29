@@ -16,8 +16,8 @@ class App(object):
         the_maze = Maze(cells_across, cells_up, cell_size)
         the_maze.tk_init(maze_window)
         the_miner = Miner()
-        the_maze.add_bod(the_miner)
         the_miner.dig(the_maze.cell(0, 0))
+        the_maze.add_bod(the_miner)
         the_maze.tk_paint()
         self.maze_windows.append(maze_window)
 

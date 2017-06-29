@@ -1,5 +1,7 @@
 # encoding: utf-8
 from typing import Optional
+from tkinter import HIDDEN
+
 from enum import Enum
 from Maze.cell import Com, Cell, Dim
 
@@ -27,6 +29,8 @@ class Wall:
     }
 
     def __init__(self, orientation, x, y):
+        self.canvas = None
+        self.id = None
         self.dim = Dim(x, y)
         self.door = "▦"
         self.cells = {Com.N: None, Com.S: None, Com.E: None, Com.W: None}
@@ -39,6 +43,7 @@ class Wall:
 
     def make_door(self, cell, kind=None) -> Optional[Cell]:  # edges are None
         if not self.is_edge():
+            self.canvas.itemconfig(self.id, state=HIDDEN)
             if kind is None:
                 self.door = " "
             else:
@@ -84,8 +89,12 @@ class Wall:
             return (not self.cells[Com.W].is_mined()) or (not self.cells[Com.E].is_mined())
 
     def tk_paint(self, canvas):
+        if not self.canvas:
+            self.canvas = canvas
         if self.is_solid():
-            canvas.create_line(self.solid, width=2)
+            self.id = canvas.create_line(self.solid, width=2)
+        else:
+            self.id = canvas.create_line(self.solid, width=2, state=HIDDEN)
 
     def __str__(self):
         if self.door == "▦":

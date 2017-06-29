@@ -56,7 +56,7 @@ class Maze:
     def animation(self):
         for bod in self.bods:
             bod.tk_paint()
-        self.tk_maze.after(12, self.animation)
+        self.tk_maze.after(4, self.animation)
 
     def __str__(self):  # __str__ method here is just for easy visualisation purposes.
         line = "\n"

@@ -1,8 +1,8 @@
 import random
-from Maze.cell import Cell
+from Bod.mover import Mover
 
 
-class Miner:
+class Miner(Mover):
     """
     Miner is a simple solitary random walk algorithm.
     The miner starts at a cell in the mine, then chooses a wall to knock down.
@@ -16,33 +16,26 @@ class Miner:
         (3) and then for each, check it still can be dug (because we are recursive).
         (4) and it it can be dug, dig it and move there, marking where I've come from, and go to (1)
         (6) continue the good work from my previous cell..
+        This is now not doing any recursion. The only state kept is the cell, which is put onto a
+        local stack (called self.track) instead. This now allows us to animate the Miner.
 
-    This is a nice bit of tail-recursion, so there is absolutely no reason why Python should balk,
-    as tail-recursion can be optimised very easily by modern static analysis.
     """
-
     def __init__(self):
-        self.id = None
-        self.canvas = None
-        self.cell = None
-        self.size = Cell.size // 2
-        self.offset = 10 + Cell.size // 4
+        super().__init__()
+        self.halo = "green"
+        self.body = "white"
 
-    def dig(self, this_cell):
-        """ Dig a maze starting from a cell """
+    def _run(self):
+        if not self.track:
+            return
+        this_cell = self.track[-1]
         walls_to_dig = this_cell.walls_that_can_be_dug()
         if walls_to_dig:
-            walls_list = list(walls_to_dig)
-            random.shuffle(walls_list)      # Interesting to see when this line is commented out.
-            for the_wall in walls_list:
-                if walls_to_dig[the_wall].can_be_dug():
-                    next_cell = this_cell.make_door_in(the_wall)
-                    self.dig(next_cell)
+            the_wall = random.choice(list(walls_to_dig))
+            next_cell = this_cell.make_door_in(the_wall)
+            self.track.append(next_cell)
+        else:
+            self.track.pop()
 
-    def tk_init(self, canvas):
-        self.canvas = canvas
-        self.id = canvas.create_oval(0, 0, self.size, self.size, outline='green', fill='white')
-        self.canvas.move(self.id, self.offset, self.offset)
-
-    def tk_paint(self):
-        pass
+    def dig(self, cell):
+        self.track.append(cell)

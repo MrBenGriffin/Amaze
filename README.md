@@ -17,10 +17,10 @@ Miner.dig() # Now works pretty well for a random walk.
 python3 ./gui.py
 ```
 
-### For the Text, run text.py
+### For the Text, run text.py (TODO: sizing options)
 
 ```bash
-python3 ./text.py for text. (TODO: sizing options)
+python3 ./text.py
 ```
 
 ## So far:

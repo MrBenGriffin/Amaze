@@ -69,11 +69,12 @@ class Config:
 
     def _get_size(self, digger):
         show_dig = self._show_dig.get()
-        maze_width = int('0' + self._maze_width_entry.get())
-        maze_height = int('0' + self._maze_height_entry.get())
-        maze_cell_size = int('0' + self._maze_size_entry.get())
-        if maze_height and maze_width and maze_cell_size:
-            self.action_on_submit(maze_width, maze_height, levels, maze_cell_size, digger, show_dig)
+        width = int('0' + self._maze_width_entry.get())
+        height = int('0' + self._maze_height_entry.get())
+        levels = int('0' + self._maze_levels_entry.get())
+        cell_size = int('0' + self._maze_size_entry.get())
+        if width and height and cell_size:
+            self.action_on_submit(width, height, levels, cell_size, digger, show_dig)
 
 if __name__ == "__main__":
     root = Tk()

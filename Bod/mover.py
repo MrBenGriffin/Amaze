@@ -18,6 +18,9 @@ class Mover(object):
         self.size = Cell.size // 2
         self.offset = 10 + Cell.size // 4
 
+    def finished(self):
+        return not self.track
+
     def tk_init(self, canvas):
         self.canvas = canvas
         self.id = canvas.create_oval(0, 0, self.size, self.size, outline=self.halo, fill=self.body)

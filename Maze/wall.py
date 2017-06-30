@@ -43,7 +43,8 @@ class Wall:
 
     def make_door(self, cell, kind=None) -> Optional[Cell]:  # edges are None
         if not self.is_edge():
-            self.canvas.itemconfig(self.id, state=HIDDEN)
+            if self.canvas:
+                self.canvas.itemconfig(self.id, state=HIDDEN)
             if kind is None:
                 self.door = " "
             else:
@@ -99,10 +100,12 @@ class Wall:
     def __str__(self):
         if self.door == "▦":
             if self.orientation == Orientation.NS:
-                return "━"
+                return "╋━"
             return "┃"
         else:
-            return self.door
+            if self.orientation == Orientation.NS:
+                return "┫ "
+            return " "
 
     def __repr__(self):
         return "[" + self.__str__() + "]"

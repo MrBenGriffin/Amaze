@@ -29,7 +29,7 @@ class Maze:
             Cell(Dim(i, j), self.ns_walls, self.ew_walls)
             for j in range(self.cells_up)] for i in range(self.cells_across)]
 
-    def cell(self, cells_across, cells_up) -> Cell:
+    def cell(self, cells_across, cells_up):
         return self.cells[cells_across][cells_up]
 
     def add_bod(self, bod):
@@ -61,15 +61,15 @@ class Maze:
     def __str__(self):  # __str__ method here is just for easy visualisation purposes.
         line = "\n"
         for i in range(self.cells_across):
-            line += "╋%s" % self.ns_walls[i][self.cells_up]
-        line += "╋\n"
+            line += "%s" % self.ns_walls[i][self.cells_up]
+        line += "┫\n"
         for j in reversed(range(self.cells_up)):  # reversed: print goes from top to bottom..
             for i in range(self.cells_across):
                 line += "%s%s" % (self.ew_walls[i][j], self.cells[i][j])
 
             line += "%s\n" % self.ew_walls[self.cells_across][j]
             for i in range(self.cells_across):
-                line += "╋%s" % self.ns_walls[i][j]
+                line += "%s" % self.ns_walls[i][j]
 
-            line += "╋\n"
+            line += "┫\n"
         return line

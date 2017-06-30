@@ -12,8 +12,16 @@ Miner.dig() # Now works pretty well for a random walk.
 ```
 
 ## Launching:
-python3 ./front.py for the GUI
-python3 ./InitialMenu.py for text. (TODO: sizing options)
+### For the GUI, run gui.py
+```bash
+python3 ./gui.py
+```
+
+### For the Text, run text.py
+
+```bash
+python3 ./text.py for text. (TODO: sizing options)
+```
 
 ## So far:
 Currently I'm not planning on adding unit tests.  Maybe one day.

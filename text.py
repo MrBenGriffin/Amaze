@@ -1,11 +1,13 @@
-import os
 from Maze.maze import Maze
-from Bod.miner import Miner
+from Bod.slaver import Slaver
+
 
 def maze():
-    the_maze = Maze(80, 10, 10)
-    the_miner = Miner()
-    the_miner.dig(the_maze.cell(0,0))
+    the_maze = Maze(40, 10, 10)
+    the_miner = Slaver()
+    the_miner.dig(the_maze.cell(0, 0))
+    while not the_miner.finished():
+        the_miner._run()
     print(the_maze)
 
 

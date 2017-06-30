@@ -32,12 +32,17 @@ class Maze:
     def cell(self, cells_across, cells_up):
         return self.cells[cells_across][cells_up]
 
-    def add_bod(self, bod):
-        self.bods.append(bod)
-        bod.tk_init(self.tk_maze)
+    def add_bod(self, bod, show):
+        if show:
+            self.bods.append(bod)
+            bod.tk_init(self.tk_maze)
+        else:
+            while not bod.finished():
+                bod.run()
 
     def tk_init(self, root):
         self.tk_root = root
+        self.tk_root.title("Maze")
         self.tk_maze = Canvas(self.tk_root,
                               width=20 + Cell.size * (self.cells_across + 0),
                               height=20 + Cell.size * (self.cells_up + 0),
@@ -56,7 +61,7 @@ class Maze:
     def animation(self):
         for bod in self.bods:
             bod.tk_paint()
-        self.tk_maze.after(4, self.animation)
+        self.tk_maze.after(60, self.animation)
 
     def __str__(self):  # __str__ method here is just for easy visualisation purposes.
         line = "\n"

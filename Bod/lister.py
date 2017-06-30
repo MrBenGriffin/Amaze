@@ -16,17 +16,17 @@ class Lister(Mover):
         self.body = "green"
 
     def _run(self):
-        if not self.track:
-            return
-        cell_index = random.randrange(len(self.track))
-        this_cell = self.track[cell_index]
-        walls_to_dig = this_cell.walls_that_can_be_dug()
-        if walls_to_dig:
-            the_wall = random.choice(list(walls_to_dig))
-            next_cell = this_cell.make_door_in(the_wall)
-            self.track.append(next_cell)
-        else:
-            del self.track[cell_index]
+        the_wall = None
+        while self.track and the_wall is None:
+            cell_index = random.randrange(len(self.track))
+            this_cell = self.track[cell_index]
+            walls_to_dig = this_cell.walls_that_can_be_dug()
+            if walls_to_dig:
+                the_wall = random.choice(list(walls_to_dig))
+                next_cell = this_cell.make_door_in(the_wall)
+                self.track.append(next_cell)
+            else:
+                del self.track[cell_index]
 
     def dig(self, cell):
         self.track.append(cell)

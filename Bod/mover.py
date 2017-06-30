@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from tkinter import HIDDEN
 from Maze.cell import Cell
 
 
@@ -18,6 +19,9 @@ class Mover(object):
         self.size = Cell.size // 2
         self.offset = 10 + Cell.size // 4
 
+    def run(self):
+        self._run()
+
     def finished(self):
         return not self.track
 
@@ -32,6 +36,10 @@ class Mover(object):
         self.canvas.coords(self.id, x, y, x + self.size, y + self.size)
 
     def tk_paint(self):
-        self._run()
-        if self.track:
-            self.tk_move(self.track[-1].dim)
+        if not self.finished():
+            self._run()
+            if self.track:
+                self.tk_move(self.track[-1].dim)
+        else:
+            self.canvas.itemconfig(self.id, state=HIDDEN)
+

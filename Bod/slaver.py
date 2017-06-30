@@ -16,28 +16,28 @@ class Slaver(Mover):
         self.sequence = 0
 
     def _run(self):
-        if not self.track:
-            return
         self.sequence += 1
-        if self.sequence & 15 != 0:   # cheaper than % 16
-            this_cell = self.track[-1]
-            walls_to_dig = this_cell.walls_that_can_be_dug()
-            if walls_to_dig:
-                the_wall = random.choice(list(walls_to_dig))
-                next_cell = this_cell.make_door_in(the_wall)
-                self.track.append(next_cell)
+        the_wall = None
+        while self.track and the_wall is None:
+            if self.sequence & 15 != 0:   # cheaper than % 16
+                this_cell = self.track[-1]
+                walls_to_dig = this_cell.walls_that_can_be_dug()
+                if walls_to_dig:
+                    the_wall = random.choice(list(walls_to_dig))
+                    next_cell = this_cell.make_door_in(the_wall)
+                    self.track.append(next_cell)
+                else:
+                    self.track.pop()
             else:
-                self.track.pop()
-        else:
-            cell_index = random.randrange(len(self.track))
-            this_cell = self.track[cell_index]
-            walls_to_dig = this_cell.walls_that_can_be_dug()
-            if walls_to_dig:
-                the_wall = random.choice(list(walls_to_dig))
-                next_cell = this_cell.make_door_in(the_wall)
-                self.track.append(next_cell)
-            else:
-                del self.track[cell_index]
+                cell_index = random.randrange(len(self.track))
+                this_cell = self.track[cell_index]
+                walls_to_dig = this_cell.walls_that_can_be_dug()
+                if walls_to_dig:
+                    the_wall = random.choice(list(walls_to_dig))
+                    next_cell = this_cell.make_door_in(the_wall)
+                    self.track.append(next_cell)
+                else:
+                    del self.track[cell_index]
 
     def dig(self, cell):
         self.track.append(cell)

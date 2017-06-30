@@ -26,16 +26,20 @@ class Miner(Mover):
         self.body = "white"
 
     def _run(self):
-        if not self.track:
-            return
-        this_cell = self.track[-1]
-        walls_to_dig = this_cell.walls_that_can_be_dug()
-        if walls_to_dig:
-            the_wall = random.choice(list(walls_to_dig))
-            next_cell = this_cell.make_door_in(the_wall)
-            self.track.append(next_cell)
-        else:
-            self.track.pop()
+        """
+        adding the while with the_wall test means that we don't get to SEE backtracking
+        when we are animating the miner.
+        """
+        the_wall = None
+        while self.track and the_wall is None:
+            this_cell = self.track[-1]
+            walls_to_dig = this_cell.walls_that_can_be_dug()
+            if walls_to_dig:
+                the_wall = random.choice(list(walls_to_dig))
+                next_cell = this_cell.make_door_in(the_wall)
+                self.track.append(next_cell)
+            else:
+                self.track.pop()
 
     def dig(self, cell):
         self.track.append(cell)

@@ -13,9 +13,9 @@ class App(object):
         self.config_window = tk_root     # for the moment, we shall use root for config.
         self.config = Config(self.config_window, self.create_maze)
 
-    def create_maze(self, cells_across, cells_up, cell_size, digger, show_dig):
+    def create_maze(self, cells_across, cells_up, cell_size, levels, digger, show_dig):
         maze_window = Toplevel(self.root)
-        the_maze = Maze(cells_across, cells_up, cell_size)
+        the_maze = Maze(cells_across, cells_up, cell_size, levels)
         the_maze.tk_init(maze_window)
         if digger == 1:
             the_miner = Miner()

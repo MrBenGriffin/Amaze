@@ -2,17 +2,19 @@
 from tkinter import Canvas
 from Maze.wall import Wall, Orientation
 from Maze.cell import Cell, Dim
+from Maze.cross import Cross
 
 """
-    Maze is created as a rectangle of x * y cells
+    Maze is created as a rectangle (cuboid) of x * y (*z) cells
 """
 
 
 class Maze:
-    def __init__(self, cells_across, cells_up, cell_size):
+    def __init__(self, cells_across, cells_up, levels, cell_size):
         Cell.size = cell_size
         self.cells_across = cells_across
         self.cells_up = cells_up
+        self.levels = levels
         self.tk_root = None
         self.tk_maze = None
         self.bods = []
@@ -65,16 +67,12 @@ class Maze:
 
     def __str__(self):  # __str__ method here is just for easy visualisation purposes.
         line = "\n"
-        for i in range(self.cells_across):
-            line += "%s" % self.ns_walls[i][self.cells_up]
-        line += "┫\n"
         for j in reversed(range(self.cells_up)):  # reversed: print goes from top to bottom..
             for i in range(self.cells_across):
-                line += "%s%s" % (self.ew_walls[i][j], self.cells[i][j])
-
-            line += "%s\n" % self.ew_walls[self.cells_across][j]
-            for i in range(self.cells_across):
-                line += "%s" % self.ns_walls[i][j]
-
-            line += "┫\n"
+                line += self.cell(i, j).str_nwn()
+            line += self.cell(self.cells_across - 1, j).str_ne()
+            line += "\n"
+        for i in range(self.cells_across):
+            line += self.cell(i, 0).str_sws()
+        line += Cross.TLXX + "\n"
         return line

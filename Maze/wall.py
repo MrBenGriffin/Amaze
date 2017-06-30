@@ -22,6 +22,8 @@ class Orientation(Enum):
 
 
 class Wall:
+    # following statics are used for text-drawing.
+    prev_ew = False
 
     solids = {
         Orientation.NS: (0, 0, 1, 0),
@@ -97,16 +99,5 @@ class Wall:
         else:
             self.id = canvas.create_line(self.solid, width=2, state=HIDDEN)
 
-    def __str__(self):
-        if self.door == "▦":
-            if self.orientation == Orientation.NS:
-                return "╋━"
-            return "┃"
-        else:
-            if self.orientation == Orientation.NS:
-                return "┫ "
-            return " "
-
     def __repr__(self):
         return "[" + self.__str__() + "]"
-

@@ -73,7 +73,7 @@ class Config:
         maze_height = int('0' + self._maze_height_entry.get())
         maze_cell_size = int('0' + self._maze_size_entry.get())
         if maze_height and maze_width and maze_cell_size:
-            self.action_on_submit(maze_width, maze_height, maze_cell_size, digger, show_dig)
+            self.action_on_submit(maze_width, maze_height, levels, maze_cell_size, digger, show_dig)
 
 if __name__ == "__main__":
     root = Tk()

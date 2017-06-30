@@ -7,10 +7,6 @@ Python 3
 tkinter How to install( http://www.tkdocs.com/tutorial/install.html )  
 typing (pip3 install typing)
 
-```python
-Miner.dig() # Now works pretty well for a random walk.
-```
-
 ## Launching:
 ### For the GUI, run gui.py
 ```bash

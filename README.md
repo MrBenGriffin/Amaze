@@ -29,16 +29,19 @@ We need a mover class - with two subclasses:
 * Adventurer      - who travels through the maze interactively.
 * Robot           - who travels through the maze. automatically.
 
-## Novelty fun: 
+# Novelty fun: 
 √ Animated miner
-###
+
 There are three types of miner so far.
+## Miner
 The 'Miner' original random walk - makes long twisty corridors, but not many decisions.
+
 ![Maze](miner.png)
-
-
+## Lister
 The 'Lister' - makes many decisions, many of which are totally trivial.
+
 ![Maze](lister.png)
+## Slaver
 
 The 'Slaver' - A hybrid, that acts like a Miner for 32/64 turns and then chooses a new spot from the
  list.

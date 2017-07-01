@@ -32,6 +32,7 @@ class Wall:
 
     def __init__(self, orientation, x, y):
         self.canvas = None
+        self.blocked = False
         self.id = None
         self.x = x
         self.y = y
@@ -53,7 +54,7 @@ class Wall:
             else:
                 self.door = kind
         other = self.other(cell)
-        other.set_mined()
+        other.mined = True
         return other
 
     def make_solid(self):
@@ -85,12 +86,12 @@ class Wall:
             return (self.cells[Com.W] is None) or (self.cells[Com.E] is None)
 
     def can_be_dug(self) -> bool:
-        if self.is_edge():
+        if self.blocked or self.is_edge():
             return False
         if self.orientation == Orientation.NS:
-            return (not self.cells[Com.N].is_mined()) or (not self.cells[Com.S].is_mined())
+            return (not self.cells[Com.N].mined) or (not self.cells[Com.S].mined)
         else:
-            return (not self.cells[Com.W].is_mined()) or (not self.cells[Com.E].is_mined())
+            return (not self.cells[Com.W].mined) or (not self.cells[Com.E].mined)
 
     def tk_paint(self, canvas):
         if not self.canvas:

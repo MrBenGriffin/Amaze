@@ -25,7 +25,6 @@ python3 ./text.py
 This will generate mazes out of box-drawing characters,
 ![Maze](assets/text.png)
 
-
 ## So far:
 Currently I'm not planning on adding unit tests.  Maybe one day.
 
@@ -41,7 +40,7 @@ We need a mover class - with two subclasses:
 * Robot           - who travels through the maze. automatically.
 
 # Novelty fun: 
-√ Animated miner
+## √ Animated miner
 
 There are three types of miner so far.
 ## Miner
@@ -59,14 +58,20 @@ The 'Slaver' - A hybrid, that acts like a Miner for 32/64 turns and then chooses
 The Slaver, albeit rather nastily named, appears to produce the best mazes so far...
 ![Maze](assets/slaver.png)
 
+## √ Stairs that go both up and down.
+Multi-level mazes are now mined. Currently each level is below
+the previous one.. (Miner starts on the ground, and digs down)
+![Maze](assets/multilevel.png)
 
+The Gui shows stairs (red go up, blue go down). The text app does NOT show stairs yet.
+
+## Other things to do...
 extra - add 'power runes':  
 A rune can be used just once to open a rune-door.  
 One can carry only one rune at a time.   
 Running over a rune picks it up, (and drops off any currently held)  
 Rune-doors: Are they opened once opened, or do they allow a single transit? 
 Multiple players (sharing a keyboard of course).
-Stairs that go both up and down.
 Rooms.
 Monsters.
 Treasure.

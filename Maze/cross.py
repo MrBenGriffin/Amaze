@@ -1,10 +1,10 @@
 
 class Cross:
-    XLXR = "═"
-    TLXX = "╝"
+    XLXR = "━"
+    TLXX = "┛"
 
     def __init__(self, top, left, bottom, right):
-        self.cross = "╬"
+        self.cross = "╋"
         self._compose(top, left, bottom, right)
 
     def _compose(self, top, left, bottom, right):
@@ -17,41 +17,41 @@ class Cross:
             if bottom:   # RB?? [╔]
                 if left:   # RBL? [╦]
                     if top:   # RBLT [╬]
-                        self.cross = "╬"
+                        self.cross = "╋"
                     else:  # RBLx
-                        self.cross = "╦"
+                        self.cross = "┳"
                 else:  # RBx? ╔
                     if top:  # RBxT [╠]
-                        self.cross = "╠"
+                        self.cross = "┣"
                     else:  # RBxx
-                        self.cross = "╔"
+                        self.cross = "┏"
             else:  # Rx?? [╺]
                 if left:  # RxL? [═]
                     if top:  # RxLT [╩]
-                        self.cross = "╩"
+                        self.cross = "┻"
                     else:  # RxLx
-                        self.cross = "═"
+                        self.cross = "━"
                 else:  # Rxx? [╺]
                     if top:  # RxxT [╠]
-                        self.cross = "╚"
+                        self.cross = "┗"
                     else:  # R
                         self.cross = "╺"
         else:   # x??? [ ]
             if bottom:   # xB??
                 if left:   # xBL?
                     if top:   # xBLT
-                        self.cross = "╣"
+                        self.cross = "┫"
                     else:  # xBLx
-                        self.cross = "╗"
+                        self.cross = "┓"
                 else:  # xBx?
                     if top:  # xBxT
-                        self.cross = "║"
+                        self.cross = "┃"
                     else:  # xBxx
                         self.cross = "╻"
             else:  # xx?? [╺]
                 if left:  # xxL?
                     if top:  # xxLT [╝]
-                        self.cross = "╝"
+                        self.cross = "┛"
                     else:  # xxLx
                         self.cross = "╸"
                 else:  # xxx?

@@ -39,10 +39,10 @@ class Config:
         self._lister = Button(self._frame, text="Lister", command=self._do_lister)
         self._slaver = Button(self._frame, text="Slaver", command=self._do_slaver)
 
-        self._maze_width_entry.insert(END, '64')
-        self._maze_height_entry.insert(END, '40')
+        self._maze_width_entry.insert(END, '60')
+        self._maze_height_entry.insert(END, '10')
         self._maze_size_entry.insert(END, '16')
-        self._maze_levels_entry.insert(END, '1')
+        self._maze_levels_entry.insert(END, '4')
 
         self._maze_width_label.grid(row=0, column=0, sticky=E)
         self._maze_width_entry.grid(row=0, column=1, columnspan=2)

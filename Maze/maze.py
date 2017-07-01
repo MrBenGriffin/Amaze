@@ -48,8 +48,21 @@ class Maze:
         self.levels = []
         # print("Making maze:", cells_across, cells_up, depth)
         for level in range(depth):
-            floor = Level(cells_across, cells_up, level, cell_size)
+            floor = Level(cells_across, cells_up, cell_size, level)
             self.levels.append(floor)
+        # Now we have all the levels we can add ceilings and floors to the cells.
+        for level_index in range(depth):
+            level = self.levels[level_index]
+            up_layer = down_layer = None
+            if level_index != depth - 1 and depth > 1:
+                down_layer = self.levels[level_index + 1]
+            if level_index != 0 and depth > 1:
+                up_layer = self.levels[level_index - 1]
+            for cell_across in range(self.cells_across):
+                for cell_up in range(self.cells_up):
+                    # if depth == 2 and level == 0, up is None and down is 1
+                    # if depth == 2 and level == 1, up is 0 and down is None
+                    level.cell(cell_across, cell_up).set_floor(up_layer, down_layer)
 
     def cell(self, cells_across, cells_up, level=None):
         if not level:
@@ -92,7 +105,7 @@ class Maze:
 
 
 class Level:
-    def __init__(self, cells_across, cells_up, level, cell_size):
+    def __init__(self, cells_across, cells_up, cell_size, level):
         Cell.size = cell_size
         self.level = level
         self.tk_level = None
@@ -121,6 +134,9 @@ class Level:
         for i in range(len(self.ew_walls)):
             for j in range(len(self.ew_walls[i])):
                 self.ew_walls[i][j].tk_paint(self.tk_level)
+        for i in range(len(self.cells)):
+            for j in range(len(self.cells[i])):
+                self.cells[i][j].tk_paint(self.tk_level)
 
     def __str__(self):  # __str__ method here is just for easy visualisation purposes.
         line = "Level %s\n" % (1 + self.level)

@@ -35,7 +35,7 @@ class Miner(Mover):
             this_cell = self.track[-1]
             walls_to_dig = this_cell.walls_that_can_be_dug()
             if walls_to_dig:
-                the_wall = random.choice(list(walls_to_dig))
+                the_wall = random.choice(walls_to_dig)
                 next_cell = this_cell.make_door_in(the_wall)
                 self.track.append(next_cell)
             else:

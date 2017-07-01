@@ -3,7 +3,7 @@ from typing import Optional
 from tkinter import HIDDEN
 
 from enum import Enum
-from Maze.cell import Com, Cell, Dim
+from Maze.cell import Com, Cell
 
 """"
     Not knowing anything about Python, here is a simple Wall class that
@@ -33,14 +33,15 @@ class Wall:
     def __init__(self, orientation, x, y):
         self.canvas = None
         self.id = None
-        self.dim = Dim(x, y)
+        self.x = x
+        self.y = y
         self.door = "▦"
         self.cells = {Com.N: None, Com.S: None, Com.E: None, Com.W: None}
         self.orientation = orientation
 
         self.solid = tuple(10 + Cell.size * i + Cell.size * j for i, j in zip(
             Wall.solids[self.orientation],
-            (self.dim.x, self.dim.y, self.dim.x, self.dim.y)
+            (self.x, self.y, self.x, self.y)
         ))
 
     def make_door(self, cell, kind=None) -> Optional[Cell]:  # edges are None
@@ -100,4 +101,4 @@ class Wall:
             self.id = canvas.create_line(self.solid, width=2, state=HIDDEN)
 
     def __repr__(self):
-        return "[" + self.__str__() + "]"
+        return "[" + str(self) + "]"

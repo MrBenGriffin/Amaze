@@ -10,7 +10,8 @@ class Cross:
     def _compose(self, top, left, bottom, right):
         """
             Compose a character made up from 4 arms based on ╬
-            So, each arm of the self.cross ╬ needs to be added/chopped based on those four conditions.
+            So, each arm of the self.cross ╬ needs to be added/chopped
+            based on those four conditions.
         """
         if right:  # R??? [╺]
             if bottom:   # RB?? [╔]

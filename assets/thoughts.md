@@ -29,7 +29,7 @@ So, a 4 by 4 set of cells can be represented ascii-wise as follows:
 | |   | |
 +-+-+-+-+
 ````
-Let's make the maze traversible - ie, no cell is inaccessible.
+Let's make the maze traversable - ie, no cell is inaccessible.
 
 Although we want to be able to walk through the maze, for drawing it, it's easier to think of walls that need drawing.
 Not only that, but (except for the outer wall) each wall is shared by two cells. 

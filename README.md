@@ -1,5 +1,7 @@
 # Amaze
-Simple fun learning project.
+![Maze](assets/logo.png)
+
+A Simple learning project.
 
 ```By Ben & Tay & Cheddies```
 ## Requires:
@@ -13,15 +15,15 @@ typing (pip3 install typing)
 python3 ./gui.py
 ```
 
-### For the Text, run text.py (TODO: sizing options)
+### For the Text, run text.py 
+###### TODO: sizing options
 
 ```bash
 python3 ./text.py
-
 ```
 
 This will generate mazes out of box-drawing characters,
-![Maze](text.png)
+![Maze](assets/text.png)
 
 
 ## So far:
@@ -31,7 +33,7 @@ Currently I'm not planning on adding unit tests.  Maybe one day.
 So, out of basic simple reasons, I chose tkinter as a gfx fe. 
 There's stuff to love in tkinter for a project of this scale.
 
-![Maze](maze.png)
+![Maze](assets/maze.png)
 
 We need a mover class - with two subclasses:
 √ Digger/Miner    - who constructs the maze (and leaves runes lying around)
@@ -45,17 +47,17 @@ There are three types of miner so far.
 ## Miner
 The 'Miner' original random walk - makes long twisty corridors, but not many decisions.
 
-![Maze](miner.png)
+![Maze](assets/miner.png)
 ## Lister
 The 'Lister' - makes many decisions, many of which are totally trivial.
 
-![Maze](lister.png)
+![Maze](assets/lister.png)
 ## Slaver
 
 The 'Slaver' - A hybrid, that acts like a Miner for 32/64 turns and then chooses a new spot from the
  list.
 The Slaver, albeit rather nastily named, appears to produce the best mazes so far...
-![Maze](slaver.png)
+![Maze](assets/slaver.png)
 
 
 extra - add 'power runes':  
@@ -68,7 +70,7 @@ Stairs that go both up and down.
 Rooms.
 Monsters.
 Treasure.
-Nethack.... ;-D
+Nethack/Rogue/Dwarf Fortress.... ;-D
 
  
  

@@ -2,16 +2,6 @@
 from enum import Enum
 from Maze.cross import Cross
 
-"""
-    Dim represents an integer x,y dimension.
-    Typically this is something that one would find in a two dimensional array.
-
-    Cell is a single cell (or room) of the maze.. It has four walls, referring to the wall class.
-    Most cell-walls are shared by neighbouring cells.
-
-    A cell is initialised with it's dimension (x/y values) and access to the (ns/ew) walls arrays.
-"""
-
 
 class Com(Enum):
     N = 'N'
@@ -43,7 +33,7 @@ class Cell:
         return self.mined
 
     def name(self) -> str:
-        return self.dim
+        return str(self.dim)
 
     def exits(self) -> dict:
         dict_of_exits = {}
@@ -106,21 +96,10 @@ class Cell:
                      False).cross
 
     def __cmp__(self, other):
-        return self.dim.x == other.dim.x and self.dim.y == other.dim.y
+        return self.dim == other.dim
 
     def __str__(self):  # Just draw what's on the floor.
         if self.rune is None:
             return " "
         return self.rune
 
-
-class Dim:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __repr__(self):
-        return "%02x%02x" % (self.x, self.y)
-
-    def __str__(self):
-        return "%02x\n%02x" % (self.x, self.y)

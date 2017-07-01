@@ -23,7 +23,7 @@ class App(object):
             the_miner = Lister()
         else:
             the_miner = Slaver()
-        the_miner.dig(the_maze.cell(0, 0))
+        the_miner.dig(the_maze.cell(0, 0, 0))
         the_maze.add_bod(the_miner, show_dig)
         the_maze.tk_paint()
         self.maze_windows.append(maze_window)

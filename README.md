@@ -36,7 +36,7 @@ There's stuff to love in tkinter for a project of this scale.
 
 We need a mover class - with two subclasses:
 √ Digger/Miner    - who constructs the maze (and leaves runes lying around)
-* Adventurer      - who travels through the maze interactively.
+√ Gamer           - who travels through the maze interactively.
 * Robot           - who travels through the maze. automatically.
 
 # Novelty fun: 
@@ -64,6 +64,10 @@ the previous one.. (Miner starts on the ground, and digs down)
 ![Maze](assets/multilevel.png)
 
 The Gui shows stairs (red go up, blue go down). The text app does NOT show stairs yet.
+
+## √ Gamer.
+Bound to the keys w-a-s-d.
+Running over stairs will take you up or down accordingly.
 
 ## Other things to do...
 extra - add 'power runes':  

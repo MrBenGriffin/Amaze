@@ -7,11 +7,12 @@ import random
 class Cell:
     size = 20
     last = None
+    last_mined = None
 
-    def __init__(self, dim, wns, wew):
+    def __init__(self, dim, wns, wew, level):
         self.rune = None  # No rune on initialisation.
-        self.tk_id = None
         self.dim = dim
+        self.level = level
         self.mined = False
         self.floors = {Com.C: None, Com.F: None}
         self.walls = {Com.N: wns[dim.x][dim.y + 1],
@@ -27,8 +28,17 @@ class Cell:
         # for com in self.walls.keys():
         #     self.walls[com].set_cell(self, com.opposite)
 
-    def name(self) -> str:
+    def name(self):
         return str(self.dim)
+
+    def move(self, com):
+        if com in self.floors and self.floors[com] and not self.floors[com].solid:
+            return self.floors[com].cells[com.opposite]
+        if com in self.walls and self.walls[com]:
+            wall = self.walls[com]
+            if not wall.is_wall():
+                return wall.cells[com]
+        return self
 
     def exits(self):
         dict_of_exits = self.level_exits()
@@ -40,14 +50,14 @@ class Cell:
     def level_exits(self):
         dict_of_exits = {}
         for compass, wall in self.walls.items():
-            if not wall.is_solid():
+            if not wall.is_wall():
                 dict_of_exits[compass] = compass
         return dict_of_exits
 
     def count_level_exits(self):
         count = 0
         for wall in list(self.walls.values()):
-            if not wall.is_solid():
+            if not wall.is_wall():
                 count += 1
         return count
 
@@ -65,17 +75,17 @@ class Cell:
             :return: list[Com] of available stairs.
         """
         if self.floors[com]:
-            cell = self.floors[com].other(com)
+            cell = self.floors[com].cells[com.opposite]
             if cell and cell.good_for_stairs():
                 walls.append(com)
         return walls
 
-    def is_stairs(self):
-        """
-        :return: boolean indicating if there are stairs in this cell.
-        """
-        return (not self.floors[Com.C] and not self.floors[Com.C].solid) \
-            or not self.floors[Com.F].solid
+    def stairs(self):
+        if self.floors[Com.F] and not self.floors[Com.F].solid:
+            return self.floors[Com.F].cells[Com.C]
+        if self.floors[Com.C] and not self.floors[Com.C].solid:
+            return self.floors[Com.C].cells[Com.F]
+        return self
 
     def good_for_stairs(self):
         """
@@ -100,17 +110,21 @@ class Cell:
 
     # make_door_in is done on self's side.
     def make_door_in(self, com, kind=None):
+        cell = None
         if com == Com.C or com == Com.F:
             cell = self.floors[com].make_hole(com)
             if cell:
                 Cell.last = com
                 self.floors[com].tk_paint(com)
                 cell.stairs_coming_in(com.opposite)
-            return cell
         else:
-            return self.walls[com].make_door(com, kind)
+            cell = self.walls[com].make_door(com, kind)
+        if cell:
+            Cell.last_mined = cell
+        return cell
 
     def stairs_coming_in(self, com):
+        self.mined = True
         self.floors[com].tk_paint(com)
         walls = self.level_exits()
         random.shuffle(walls)
@@ -131,14 +145,14 @@ class Cell:
 
         if north_wall:
             n_cell = north_wall.other(self)
-            right = north_wall.is_solid()
+            right = north_wall.is_wall()
             if n_cell and n_cell.walls[Com.W]:
-                top = n_cell.walls[Com.W].is_solid()
+                top = n_cell.walls[Com.W].is_wall()
         if west_wall:
             w_cell = west_wall.other(self)
-            bottom = west_wall.is_solid()
+            bottom = west_wall.is_wall()
             if w_cell and w_cell.walls[Com.N]:
-                left = w_cell.walls[Com.N].is_solid()
+                left = w_cell.walls[Com.N].is_wall()
 
         nw = Cross(top, left, bottom, right)
         if right:
@@ -149,8 +163,8 @@ class Cell:
 
     def str_sws(self):
         left = bottom = False
-        right = self.walls[Com.S].is_solid()
-        top = self.walls[Com.W].is_solid()
+        right = self.walls[Com.S].is_wall()
+        top = self.walls[Com.W].is_wall()
         w_cell = self.walls[Com.W].other(self)
         if w_cell:
             left = True
@@ -158,7 +172,7 @@ class Cell:
 
     def str_ne(self):
         return Cross(self.walls[Com.N].other(self) is not None,
-                     self.walls[Com.N].is_solid(),
+                     self.walls[Com.N].is_wall(),
                      True,
                      False).cross
 

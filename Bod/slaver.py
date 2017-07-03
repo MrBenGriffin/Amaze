@@ -44,6 +44,3 @@ class Slaver(Mover):
                         the_wall = None
                 else:
                     del self.track[cell_index]
-
-    def dig(self, cell):
-        self.track.append(cell)

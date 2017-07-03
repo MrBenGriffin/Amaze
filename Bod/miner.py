@@ -52,6 +52,3 @@ class Miner(Mover):
                     the_dug_wall = None
             else:
                 self.track.pop()
-
-    def dig(self, cell):
-        self.track.append(cell)

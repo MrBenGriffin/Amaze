@@ -23,6 +23,13 @@ class Mover(object):
     def run(self):
         self._run()
 
+    def dig(self, cell):
+        cell.mined = True
+        self.go(cell)
+
+    def go(self, cell):
+        self.track.append(cell)
+
     def finished(self):
         return not self.track
 

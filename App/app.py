@@ -3,11 +3,14 @@ from Maze.maze import Maze
 from Bod.miner import Miner
 from Bod.lister import Lister
 from Bod.slaver import Slaver
+from Bod.gamer import Gamer, Goal
 from App.config import Config
 
 
 class App(object):
     def __init__(self, tk_root):
+        self.miner = None
+        self.gamer = None
         self.root = tk_root
         self.maze_windows = []
         self.config_window = tk_root     # for the moment, we shall use root for config.
@@ -18,23 +21,24 @@ class App(object):
         the_maze = Maze(cells_across, cells_up, cell_size, levels)
         the_maze.tk_init(maze_window)
         if digger == 1:
-            the_miner = Miner()
+            self.miner = Miner()
         elif digger == 2:
-            the_miner = Lister()
+            self.miner = Lister()
         else:
-            the_miner = Slaver()
-        the_miner.dig(the_maze.cell(0, 0, 0))
-        the_maze.add_bod(the_miner, show_dig)
+            self.miner = Slaver()
+        self.miner.dig(the_maze.cell(0, 0, 0))
+        self.gamer = Gamer()
+        self.gamer.go(the_maze.cell(0, 0, 0))
+        the_maze.add_bod(self.miner, show_dig)
+        the_maze.add_bod(self.gamer, True)
         the_maze.tk_paint()
         self.maze_windows.append(maze_window)
 
     @staticmethod
     def run():
-        sys.setrecursionlimit(10000)
         the_root = Tk()
         App(the_root)
         the_root.mainloop()
-
 
 if __name__ == "__main__":
     App.run()

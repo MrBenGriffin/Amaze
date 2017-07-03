@@ -31,5 +31,3 @@ class Lister(Mover):
             else:
                 del self.track[cell_index]
 
-    def dig(self, cell):
-        self.track.append(cell)

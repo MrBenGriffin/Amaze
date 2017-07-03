@@ -1,5 +1,4 @@
 # encoding: utf-8
-from typing import Optional
 from tkinter import HIDDEN
 from Maze.cell import Cell
 from Maze.util import Dim, Com, Orientation
@@ -59,7 +58,7 @@ class Wall:
     def make_solid(self):
         self.door = "▦"
 
-    def is_solid(self) -> bool:
+    def is_wall(self) -> bool:
         return self.door == "▦"
 
     def set_cell(self, cell, com):
@@ -81,7 +80,7 @@ class Wall:
 
     def tk_paint(self):
         if self.level.tk_level:
-            if self.is_solid():
+            if self.is_wall():
                 self.id = self.level.tk_level.create_line(self.solid, width=2)
             else:
                 self.id = self.level.tk_level.create_line(self.solid, width=2, state=HIDDEN)
@@ -94,10 +93,10 @@ class Floor:
     the Com.C is the cell that sees this as a ceiling.
     the Com.F is the cell that sees this as a floor.
     """
-    def __init__(self, ceiling, floor, level):
+
+    def __init__(self, floor, ceiling):
         self.cells = {Com.C: ceiling, Com.F: floor}
         self.solid = True
-        self.level = level
         self.tk_c = self.tk_f = None
         if ceiling:
             ceiling.floors[Com.C] = self
@@ -107,15 +106,12 @@ class Floor:
         # get the dimensions of cells and construct the co-ordinates for drawing the stairs.
         # basically, x0,y0 x1,y1
         self.p = Dim(b[0] + 4, t[1] - 4, 0)
-        self.q = Dim(b[2]-4, b[1] + 4, 0)
-
-    def other(self, com):
-        return self.cells[com.opposite]
+        self.q = Dim(b[2] - 4, b[1] + 4, 0)
 
     def make_hole(self, com):
         self.solid = False
         this = self.cells[com]
-        other = self.other(com)
+        other = self.cells[com.opposite]
         if this:
             self.tk_paint(this)
         if other:
@@ -125,12 +121,17 @@ class Floor:
     def tk_paint(self, cell):
         if self.solid:
             return
-        if self.level.tk_level:
-            if cell == self.cells[Com.C]:
-                self.tk_c = self.level.tk_level.create_line(
-                    (self.p.x, self.p.y, self.q.x, self.p.y, self.q.x, self.q.y, self.p.x, self.p.y),
+        if cell == self.cells[Com.C]:
+            if cell.level.tk_level:
+                self.tk_c = cell.level.tk_level.create_line(
+                    (
+                        self.p.x, self.p.y, self.q.x, self.p.y, self.q.x, self.q.y, self.p.x,
+                        self.p.y),
                     width=2, fill='red')
-            elif cell == self.cells[Com.F]:
-                self.tk_f = self.level.tk_level.create_line(
-                    (self.p.x, self.p.y, self.p.x, self.q.y, self.q.x, self.p.y, self.p.x, self.p.y),
+        elif cell == self.cells[Com.F]:
+            if cell.level.tk_level:
+                self.tk_f = cell.level.tk_level.create_line(
+                    (
+                        self.p.x, self.p.y, self.p.x, self.q.y, self.q.x, self.p.y, self.p.x,
+                        self.p.y),
                     width=2, fill='blue')

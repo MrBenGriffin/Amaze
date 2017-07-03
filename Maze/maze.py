@@ -16,6 +16,7 @@ class Maze:
         (Not hard to change this).
 
     """
+
     def __init__(self, cells_across, cells_up, depth, cell_size):
         self.cells_across = cells_across
         self.cells_up = cells_up
@@ -25,11 +26,13 @@ class Maze:
         self.levels = []
         # print("Making maze:", cells_across, cells_up, depth)
         for level in range(self.depth):
-            floor = Level(self, cells_across, cells_up, cell_size, level)
+            floor = Level(cells_across, cells_up, cell_size, level)
             self.levels.append(floor)
+        for level in self.levels:
+            level.set_floor(self)
 
     def cell(self, cells_across, cells_up, level=None):
-        if level is None or level < 0:
+        if level is None or level not in range(0, self.depth):
             return None
         return self.levels[level].cell(cells_across, cells_up)
 
@@ -69,12 +72,13 @@ class Maze:
 
 
 class Level:
-    def __init__(self, maze, cells_across, cells_up, cell_size, level):
+    def __init__(self, cells_across, cells_up, cell_size, level):
         Cell.size = cell_size
         self.level = level
         self.tk_level = None
         self.cells_across = cells_across
         self.cells_up = cells_up
+        self.floors = []
 
         self.ns_walls = [[
             Wall(Orientation.NS, i, j, self)
@@ -85,14 +89,14 @@ class Level:
             for j in range(self.cells_up)] for i in range(self.cells_across + 1)]
 
         self.cells = [[
-            Cell(Dim(i, j, level), self.ns_walls, self.ew_walls)
+            Cell(Dim(i, j, level), self.ns_walls, self.ew_walls, self)
             for j in range(self.cells_up)]
             for i in range(self.cells_across)]
 
-        self.floors = [[
-            Floor(maze.cell(i, j, self.level - 1), self.cells[i][j], self)
-            for j in range(self.cells_up)]
-            for i in range(self.cells_across)]
+    def set_floor(self, maze):
+        self.floors = [[Floor(self.cells[i][j], maze.cell(i, j, self.level + 1))
+                       for j in range(self.cells_up)]
+                       for i in range(self.cells_across)]
 
     def cell(self, cells_across, cells_up):
         return self.cells[cells_across][cells_up]

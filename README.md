@@ -37,7 +37,9 @@ There's stuff to love in tkinter for a project of this scale.
 We need a mover class - with two subclasses:
 
 √ Digger/Miner    - who constructs the maze (and leaves runes lying around)
+
 √ Gamer           - who travels through the maze interactively.
+
 * Robot           - who travels through the maze. automatically.
 
 # Novelty fun: 

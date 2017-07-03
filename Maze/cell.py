@@ -1,15 +1,7 @@
 # encoding: utf-8
-from enum import Enum
 from Maze.cross import Cross
+from Maze.util import Com
 import random
-
-class Com(Enum):
-    N = 'N'  # North
-    S = 'S'  # South
-    E = 'E'  # East
-    W = 'W'  # West
-    C = 'C'  # Ceiling
-    F = 'F'  # Floor
 
 
 class Cell:
@@ -19,9 +11,9 @@ class Cell:
     def __init__(self, dim, wns, wew):
         self.rune = None  # No rune on initialisation.
         self.tk_id = None
-        self.canvas = None
         self.dim = dim
         self.mined = False
+        self.floors = {Com.C: None, Com.F: None}
         self.walls = {Com.N: wns[dim.x][dim.y + 1],
                       Com.E: wew[dim.x + 1][dim.y],
                       Com.S: wns[dim.x][dim.y],
@@ -31,112 +23,100 @@ class Cell:
         self.walls[Com.E].set_cell(self, Com.W)
         self.walls[Com.S].set_cell(self, Com.N)
         self.walls[Com.W].set_cell(self, Com.E)
-        self.floors = {
-            Com.C: {'cell': None, 'solid': True},
-            Com.F: {'cell': None, 'solid': True}
-        }
 
-    def set_floor(self, up, down):
-        if up:
-            self.floors[Com.C] = {'cell': up.cell(self.dim.x, self.dim.y), 'solid': True}
-        if down:
-            self.floors[Com.F] = {'cell': down.cell(self.dim.x, self.dim.y), 'solid': True}
+        # for com in self.walls.keys():
+        #     self.walls[com].set_cell(self, com.opposite)
 
     def name(self) -> str:
         return str(self.dim)
 
     def exits(self):
-        dict_of_exits = self.level_exits(self)
+        dict_of_exits = self.level_exits()
         for compass, floor in self.floors.items():
             if not floor["solid"]:
-                dict_of_exits[compass] = floor["cell"]
+                dict_of_exits[compass] = compass
         return dict_of_exits
 
     def level_exits(self):
         dict_of_exits = {}
         for compass, wall in self.walls.items():
             if not wall.is_solid():
-                dict_of_exits[compass] = wall.other(self)
+                dict_of_exits[compass] = compass
         return dict_of_exits
 
+    def count_level_exits(self):
+        count = 0
+        for wall in list(self.walls.values()):
+            if not wall.is_solid():
+                count += 1
+        return count
+
     def level_walls_to_be_dug(self, walls):
-        """
-            Walls that may be dug at this level.
-            We don't really want stairs to have more than one
-            exit / entrance, but it's tricky..
-        """
         for compass, wall in self.walls.items():
-            if wall.can_be_dug():
+            if wall.can_be_dug(compass):
                 walls.append(compass)
         return walls
 
     def stairs_to_be_dug(self, com, walls):
         """
-            See if this may be dug.
+            See if this is a good point for stairs.
+            * This cell must be a dead-end.
+            * Next floor must be 'good_for_stairs'
+            :return: list[Com] of available stairs.
         """
-        cell = self.floors[com]["cell"]
-        if cell and cell.good_for_stairs():
-            walls.append(com)
+        if self.floors[com]:
+            cell = self.floors[com].other(com)
+            if cell and cell.good_for_stairs():
+                walls.append(com)
         return walls
 
     def is_stairs(self):
-        return not self.floors[Com.C]["solid"] or not self.floors[Com.F]["solid"]
+        """
+        :return: boolean indicating if there are stairs in this cell.
+        """
+        return (not self.floors[Com.C] and not self.floors[Com.C].solid) \
+            or not self.floors[Com.F].solid
 
     def good_for_stairs(self):
-        return not self.mined and len(self.level_walls_to_be_dug([])) == 4
+        """
+        :return: boolean representing if this cell is good for stairs to be built to.
+        """
+        return not self.mined and len(self.level_walls_to_be_dug([])) > 0
 
     def walls_that_can_be_dug(self):
+        """
+        :return: list [Com] that may be dug..
+        """
+        # First of all check to see if there are walls on this level.
+        # We don't want to go up or down if we can mosey along.
         walls = self.level_walls_to_be_dug([])
-        exit_count = len(self.level_exits())
-        if not walls and Cell.last and exit_count == 1:  #
-            walls = self.stairs_to_be_dug(Cell.last, walls)
-        if not walls and exit_count == 1:  #
-            walls = self.stairs_to_be_dug(Com.C, walls)
-            walls = self.stairs_to_be_dug(Com.F, walls)
+        if not walls and self.count_level_exits() == 1:
+            if not walls and Cell.last:  #
+                walls = self.stairs_to_be_dug(Cell.last, walls)
+            if not walls:  #
+                walls = self.stairs_to_be_dug(Com.C, walls)
+                walls = self.stairs_to_be_dug(Com.F, walls)
         return walls
 
-    def tk_paint(self, canvas):
-        if not self.canvas:
-            self.canvas = canvas
-        c = self.walls[Com.N].solid
-        f = self.walls[Com.S].solid
-        x0 = f[0] + 4
-        x1 = f[2] - 4
-        y0 = c[1] - 4
-        y1 = f[1] + 4
-        if not self.floors[Com.C]["solid"]:
-            self.tk_id = canvas.create_line((x0, y0, x1, y0, x1, y1, x0, y0), width=2, fill='red')
-        elif not self.floors[Com.F]["solid"]:
-            self.tk_id = canvas.create_line((x0, y0, x0, y1, x1, y0, x0, y0), width=2, fill='blue')
-
+    # make_door_in is done on self's side.
     def make_door_in(self, com, kind=None):
-        self.mined = True
         if com == Com.C or com == Com.F:
-            floor = self.floors[com]
-            cell = floor["cell"]
-            floor["solid"] = False
-            if self.canvas:
-                self.tk_paint(self.canvas)
-            if com == Com.C:
-                Cell.last = Com.C
-                return cell.start(Com.F)
-            else:
-                Cell.last = Com.F
-                return cell.start(Com.C)
+            cell = self.floors[com].make_hole(com)
+            if cell:
+                Cell.last = com
+                self.floors[com].tk_paint(com)
+                cell.stairs_coming_in(com.opposite)
+            return cell
         else:
-            return self.walls[com].make_door(self, kind)
+            return self.walls[com].make_door(com, kind)
 
-    def start(self, com):
-        self.mined = True
-        self.floors[com]["solid"] = False
+    def stairs_coming_in(self, com):
+        self.floors[com].tk_paint(com)
         walls = self.level_exits()
         random.shuffle(walls)
-        while len(walls) > 1:
+        while walls and len(walls) > 1:
             wall = walls.pop()
             wall.blocked = True
-        if self.canvas:
-            self.tk_paint(self.canvas)
-        return self
 
     def change_rune(self, the_rune=None):  # Accepts a rune if one is passed.
         result = self.rune

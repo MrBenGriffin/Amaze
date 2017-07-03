@@ -1,9 +1,8 @@
 # encoding: utf-8
 from typing import Optional
 from tkinter import HIDDEN
-
-from enum import Enum
-from Maze.cell import Com, Cell
+from Maze.cell import Cell
+from Maze.util import Dim, Com, Orientation
 
 """"
     Not knowing anything about Python, here is a simple Wall class that
@@ -16,11 +15,6 @@ from Maze.cell import Com, Cell
 """
 
 
-class Orientation(Enum):
-    NS = True
-    EW = False
-
-
 class Wall:
     # following statics are used for text-drawing.
     prev_ew = False
@@ -30,14 +24,15 @@ class Wall:
         Orientation.EW: (0, 1, 0, 0)
     }
 
-    def __init__(self, orientation, x, y):
-        self.canvas = None
+    def __init__(self, orientation, x, y, level):
+        self.level = level
         self.blocked = False
         self.id = None
         self.x = x
         self.y = y
         self.door = "▦"
-        self.cells = {Com.N: None, Com.S: None, Com.E: None, Com.W: None}
+        self.cells = {}
+        # We need the orientation in order to draw the right wall..
         self.orientation = orientation
 
         self.solid = tuple(10 + Cell.size * i + Cell.size * j for i, j in zip(
@@ -45,61 +40,97 @@ class Wall:
             (self.x, self.y, self.x, self.y)
         ))
 
-    def make_door(self, cell, kind=None) -> Optional[Cell]:  # edges are None
-        if not self.is_edge():
-            if self.canvas:
-                self.canvas.itemconfig(self.id, state=HIDDEN)
+    def make_door(self, cell_dir, kind=None):
+        if cell_dir not in self.cells:
+            return None
+        other = self.cells[cell_dir]
+        if not self.blocked and other:
+            other.mined = True
+            if self.level.tk_level:
+                self.level.tk_level.itemconfig(self.id, state=HIDDEN)
             if kind is None:
                 self.door = " "
             else:
                 self.door = kind
-        other = self.other(cell)
-        other.mined = True
-        return other
+            return other
+        else:
+            return None
 
     def make_solid(self):
         self.door = "▦"
 
     def is_solid(self) -> bool:
-        return self.is_edge() or self.door == "▦"
+        return self.door == "▦"
 
-    def set_cell(self, cell, com) -> None:
+    def set_cell(self, cell, com):
         self.cells[com] = cell
+        opp = com.opposite
+        if opp not in self.cells:
+            self.cells[opp] = None
 
-    def other(self, cell) -> Optional[Cell]:
-        """ Edges have no cell on the other side, so will return None """
-        if self.orientation == Orientation.NS:
-            if self.cells[Com.N] == cell:
-                return self.cells[Com.S]
-            else:
-                return self.cells[Com.N]
-        else:
-            if self.cells[Com.E] == cell:
-                return self.cells[Com.W]
-            else:
-                return self.cells[Com.E]
-
-    def is_edge(self) -> bool:  # If on the edge, then one of my wall cells will be None.
+    def is_edge(self):  # If on the edge, then one of my wall cells will be None.
         if self.orientation == Orientation.NS:
             return (self.cells[Com.N] is None) or (self.cells[Com.S] is None)
         else:
             return (self.cells[Com.W] is None) or (self.cells[Com.E] is None)
 
-    def can_be_dug(self) -> bool:
-        if self.blocked or self.is_edge():
-            return False
-        if self.orientation == Orientation.NS:
-            return (not self.cells[Com.N].mined) or (not self.cells[Com.S].mined)
-        else:
-            return (not self.cells[Com.W].mined) or (not self.cells[Com.E].mined)
+    def can_be_dug(self, com_from):
+        # if this is not blocked and there is a cell and it's not mined, self can be dug.
+        cell = self.cells[com_from]
+        return not self.blocked and cell and not cell.mined
 
-    def tk_paint(self, canvas):
-        if not self.canvas:
-            self.canvas = canvas
-        if self.is_solid():
-            self.id = canvas.create_line(self.solid, width=2)
-        else:
-            self.id = canvas.create_line(self.solid, width=2, state=HIDDEN)
+    def tk_paint(self):
+        if self.level.tk_level:
+            if self.is_solid():
+                self.id = self.level.tk_level.create_line(self.solid, width=2)
+            else:
+                self.id = self.level.tk_level.create_line(self.solid, width=2, state=HIDDEN)
 
-    def __repr__(self):
-        return "[" + str(self) + "]"
+
+class Floor:
+    """
+    Represents a 'floor' between two cells.
+    The cell floor is the lower cell's ceiling.
+    the Com.C is the cell that sees this as a ceiling.
+    the Com.F is the cell that sees this as a floor.
+    """
+    def __init__(self, ceiling, floor, level):
+        self.cells = {Com.C: ceiling, Com.F: floor}
+        self.solid = True
+        self.level = level
+        self.tk_c = self.tk_f = None
+        if ceiling:
+            ceiling.floors[Com.C] = self
+        floor.floors[Com.F] = self
+        t = floor.walls[Com.N].solid
+        b = floor.walls[Com.S].solid
+        # get the dimensions of cells and construct the co-ordinates for drawing the stairs.
+        # basically, x0,y0 x1,y1
+        self.p = Dim(b[0] + 4, t[1] - 4, 0)
+        self.q = Dim(b[2]-4, b[1] + 4, 0)
+
+    def other(self, com):
+        return self.cells[com.opposite]
+
+    def make_hole(self, com):
+        self.solid = False
+        this = self.cells[com]
+        other = self.other(com)
+        if this:
+            self.tk_paint(this)
+        if other:
+            self.tk_paint(other)
+        return other
+
+    def tk_paint(self, cell):
+        if self.solid:
+            return
+        if self.level.tk_level:
+            if cell == self.cells[Com.C]:
+                self.tk_c = self.level.tk_level.create_line(
+                    (self.p.x, self.p.y, self.q.x, self.p.y, self.q.x, self.q.y, self.p.x, self.p.y),
+                    width=2, fill='red')
+            elif cell == self.cells[Com.F]:
+                self.tk_f = self.level.tk_level.create_line(
+                    (self.p.x, self.p.y, self.p.x, self.q.y, self.q.x, self.p.y, self.p.x, self.p.y),
+                    width=2, fill='blue')

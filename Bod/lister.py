@@ -24,7 +24,10 @@ class Lister(Mover):
             if walls_to_dig:
                 the_wall = random.choice(walls_to_dig)
                 next_cell = this_cell.make_door_in(the_wall)
-                self.track.append(next_cell)
+                if next_cell:
+                    self.track.append(next_cell)
+                else:
+                    the_wall = None
             else:
                 del self.track[cell_index]
 

@@ -24,9 +24,6 @@ class Cell:
         self.walls[Com.S].set_cell(self, Com.N)
         self.walls[Com.W].set_cell(self, Com.E)
 
-        # for com in self.walls.keys():
-        #     self.walls[com].set_cell(self, com.opposite)
-
     def name(self):
         return str(self.dim)
 
@@ -134,6 +131,15 @@ class Cell:
         result = self.rune
         self.rune = the_rune
         return result
+
+    def __str__(self):
+        if self.rune:
+            return self.rune
+        if self.floors[Com.F] and not self.floors[Com.F].solid:
+            return '⍌'
+        if self.floors[Com.C] and not self.floors[Com.C].solid:
+            return '⍓'
+        return " "
 
     def __cmp__(self, other):
         return self.dim == other.dim

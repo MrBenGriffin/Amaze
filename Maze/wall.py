@@ -11,7 +11,7 @@ class Concrete:
         (' ', '╸', '╺', '═', '╹', '╝', '╚', '╩', '╻', '╗', '╔', '╦', '║', '╣', '╠', '╬')
     )
 
-    def __init__(self, value=0, kind=0):
+    def __init__(self, value=0, kind=1):
         self.corner = Concrete.kinds[kind][value & 0x0F]
 
     def __repr__(self):
@@ -28,7 +28,7 @@ class Corner:
         for com, wall in self.walls.items():
             if wall and wall.is_wall():
                 value |= com
-        return str(Concrete(value, 1))
+        return str(Concrete(value))
 
 
 class Wall:
@@ -97,6 +97,13 @@ class Wall:
     def can_be_dug(self, com_from):
         cell = self.cells[com_from]
         return not self.blocked and cell and not cell.mined
+
+    def __str__(self):
+        if not self.is_wall():
+            return ' '
+        if self.orientation == Orientation.NS:
+            return str(Concrete(Com.E | Com.W))
+        return str(Concrete(Com.N | Com.S))
 
     def tk_paint(self):
         if self.level.tk_level:

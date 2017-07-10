@@ -107,7 +107,8 @@ class Level:
         # Corner is top left of each cell.
         # So at cell 0,0 the corner sees the ns wall 0,0 as being East... +
         self.corners = [[
-            self._corner(i, j)
+            Corner({Com.N: self._ew_wall(i, j - 1), Com.W: self._ns_wall(i - 1, j),
+                    Com.S: self._ew_wall(i, j), Com.E: self._ns_wall(i, j)})
             for j in range(self.cells_up+1)]
             for i in range(self.cells_across+1)]
 
@@ -132,21 +133,9 @@ class Level:
             return self.ew_walls[across][up]
         return None
 
-    def _corner(self, i, j):
-        corner = {}
-        if self._ew_wall(i, j - 1):
-            corner[Com.N] = self._ew_wall(i, j - 1)
-        if self._ns_wall(i - 1, j):
-            corner[Com.W] = self._ns_wall(i - 1, j)
-        if self._ew_wall(i, j):
-            corner[Com.S] = self._ew_wall(i, j)
-        if self._ns_wall(i, j):
-            corner[Com.E] = self._ns_wall(i, j)
-        return Corner(corner)
-
-    def cell(self, cell_across, cell_up):
-        if self.cells[cell_across][cell_up]:
-            return self.cells[cell_across][cell_up]
+    def cell(self, across, up):
+        if across in range(0, self.cells_across) and up in range(0, self.cells_up):
+            return self.cells[across][up]
         return None
 
     def tk_paint(self):
@@ -163,7 +152,15 @@ class Level:
     def __str__(self):  # __str__ method here is just for easy visualisation purposes.
         line = "\nLevel %s\n" % (1 + self.level)
         for j in range(self.cells_up+1):  # reversed: print goes from top to bottom..
+            line_ns = ""
+            line_ew = ""
             for i in range(self.cells_across+1):
-                line += str(self.corners[i][j])
-            line += "\n"
+                line_ns += str(self.corners[i][j])
+                if self._ns_wall(i, j):
+                    line_ns += str(self._ns_wall(i, j))
+                if self._ew_wall(i, j):
+                    line_ew += str(self._ew_wall(i, j))
+                if self.cell(i, j):
+                    line_ew += str(self.cell(i, j))
+            line += line_ns + "\n" + line_ew + "\n"
         return line

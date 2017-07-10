@@ -3,7 +3,7 @@ from Bod.slaver import Slaver
 
 
 def maze():
-    the_maze = Maze(60, 10, 2, 0)
+    the_maze = Maze(70, 4, 2, 0)
     the_miner = Slaver()
     the_miner.dig(the_maze.cell(0, 0, 0))
     while not the_miner.finished():

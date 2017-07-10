@@ -3,15 +3,32 @@ from tkinter import HIDDEN
 from Maze.cell import Cell
 from Maze.util import Dim, Com, Orientation
 
-""""
-    Not knowing anything about Python, here is a simple Wall class that
-    should represent what we need to know about Walls.
-    There are two aspects to a wall in general, one is which direction it is going in
-    (north-south) or (west-east) - and then whether or not it has a doorway in it.
 
-    I have also added a simple 'enum' class for Orientation. It's possibly a bit OTT.
-    Likewise, a Com (compass) class used to represent compass points.
-"""
+class Concrete:
+    kinds = (
+        (' ', '╴', '╶', '─', '╵', '┘', '└', '┴', '╷', '┐', '┌', '┬', '│', '┤', '├', '┼'),
+        (' ', '╸', '╺', '━', '╹', '┛', '┗', '┻', '╻', '┓', '┏', '┳', '┃', '┫', '┣', '╋'),
+        (' ', '╸', '╺', '═', '╹', '╝', '╚', '╩', '╻', '╗', '╔', '╦', '║', '╣', '╠', '╬')
+    )
+
+    def __init__(self, value=0, kind=0):
+        self.corner = Concrete.kinds[kind][value & 0x0F]
+
+    def __repr__(self):
+        return self.corner
+
+
+class Corner:
+    def __init__(self, wall_dict):
+        self.concrete = None
+        self.walls = wall_dict   # N,E,S,W
+
+    def __str__(self):
+        value = Com.X
+        for com, wall in self.walls.items():
+            if wall and wall.is_wall():
+                value |= com
+        return str(Concrete(value, 1))
 
 
 class Wall:
@@ -55,6 +72,10 @@ class Wall:
         else:
             return None
 
+    def erode(self):
+        if self.is_wall():
+            pass
+
     def make_solid(self):
         self.door = "▦"
 
@@ -74,7 +95,6 @@ class Wall:
             return (self.cells[Com.W] is None) or (self.cells[Com.E] is None)
 
     def can_be_dug(self, com_from):
-        # if this is not blocked and there is a cell and it's not mined, self can be dug.
         cell = self.cells[com_from]
         return not self.blocked and cell and not cell.mined
 
@@ -103,8 +123,6 @@ class Floor:
         floor.floors[Com.F] = self
         t = floor.walls[Com.N].solid
         b = floor.walls[Com.S].solid
-        # get the dimensions of cells and construct the co-ordinates for drawing the stairs.
-        # basically, x0,y0 x1,y1
         self.p = Dim(b[0] + 4, t[1] - 4, 0)
         self.q = Dim(b[2] - 4, b[1] + 4, 0)
 
@@ -135,3 +153,4 @@ class Floor:
                         self.p.x, self.p.y, self.p.x, self.q.y, self.q.x, self.p.y, self.p.x,
                         self.p.y),
                     width=2, fill='blue')
+

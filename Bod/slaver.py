@@ -11,6 +11,7 @@ class Slaver(Mover):
     """
     def __init__(self):
         super().__init__()
+        self.is_miner = True
         self.halo = "white"
         self.body = "black"
         self.sequence = 0

@@ -1,9 +1,8 @@
 # encoding: utf-8
 from tkinter import Canvas
-from Maze.util import Orientation, Dim
-from Maze.wall import Wall, Floor
+from Maze.util import Orientation, Com, Dim
+from Maze.wall import Wall, Floor, Corner
 from Maze.cell import Cell
-from Maze.cross import Cross
 
 
 class Maze:
@@ -21,6 +20,7 @@ class Maze:
         self.cells_across = cells_across
         self.cells_up = cells_up
         self.depth = depth
+        self.mined = False
         self.tk_maze = None
         self.bods = []
         self.levels = []
@@ -31,6 +31,13 @@ class Maze:
         for level in self.levels:
             level.set_floor(self)
 
+    def mined(self):
+        # This happens just once after the miners are done.
+        # So we can post-process the mine here.
+        self.mined = True
+        for level in self.levels:
+            level.erode()
+
     def cell(self, cells_across, cells_up, level=None):
         if level is None or level not in range(0, self.depth):
             return None
@@ -39,7 +46,7 @@ class Maze:
     def add_bod(self, bod, show):
         if show and self.tk_maze:
             self.bods.append(bod)
-            bod.tk_init(self.levels)
+            bod.tk_init(self)
         else:
             while not bod.finished():
                 bod.run()
@@ -57,7 +64,11 @@ class Maze:
 
     def animation(self):
         for bod in self.bods:
-            bod.tk_paint()
+            if bod.is_miner:
+                if not self.mined:
+                    bod.tk_paint()
+            else:
+                bod.tk_paint()
         self.tk_maze.after(60, self.animation)
 
     def tk_paint(self):
@@ -93,13 +104,50 @@ class Level:
             for j in range(self.cells_up)]
             for i in range(self.cells_across)]
 
+        # Corner is top left of each cell.
+        # So at cell 0,0 the corner sees the ns wall 0,0 as being East... +
+        self.corners = [[
+            self._corner(i, j)
+            for j in range(self.cells_up+1)]
+            for i in range(self.cells_across+1)]
+
+    def erode(self):
+        for wall in self.ns_walls:
+            wall.erode()
+        for wall in self.ew_walls:
+            wall.erode()
+
     def set_floor(self, maze):
         self.floors = [[Floor(self.cells[i][j], maze.cell(i, j, self.level + 1))
                        for j in range(self.cells_up)]
                        for i in range(self.cells_across)]
 
-    def cell(self, cells_across, cells_up):
-        return self.cells[cells_across][cells_up]
+    def _ns_wall(self, across, up):
+        if across in range(self.cells_across) and up in range(self.cells_up+1):
+            return self.ns_walls[across][up]
+        return None
+
+    def _ew_wall(self, across, up):
+        if across in range(0, self.cells_across+1) and up in range(0, self.cells_up):
+            return self.ew_walls[across][up]
+        return None
+
+    def _corner(self, i, j):
+        corner = {}
+        if self._ew_wall(i, j - 1):
+            corner[Com.N] = self._ew_wall(i, j - 1)
+        if self._ns_wall(i - 1, j):
+            corner[Com.W] = self._ns_wall(i - 1, j)
+        if self._ew_wall(i, j):
+            corner[Com.S] = self._ew_wall(i, j)
+        if self._ns_wall(i, j):
+            corner[Com.E] = self._ns_wall(i, j)
+        return Corner(corner)
+
+    def cell(self, cell_across, cell_up):
+        if self.cells[cell_across][cell_up]:
+            return self.cells[cell_across][cell_up]
+        return None
 
     def tk_paint(self):
         for i in range(len(self.ns_walls)):
@@ -113,13 +161,9 @@ class Level:
                 self.floors[i][j].tk_paint(self.cells[i][j])
 
     def __str__(self):  # __str__ method here is just for easy visualisation purposes.
-        line = "Level %s\n" % (1 + self.level)
-        for j in reversed(range(self.cells_up)):  # reversed: print goes from top to bottom..
-            for i in range(self.cells_across):
-                line += self.cell(i, j).str_nwn()
-            line += self.cell(self.cells_across - 1, j).str_ne()
+        line = "\nLevel %s\n" % (1 + self.level)
+        for j in range(self.cells_up+1):  # reversed: print goes from top to bottom..
+            for i in range(self.cells_across+1):
+                line += str(self.corners[i][j])
             line += "\n"
-        for i in range(self.cells_across):
-            line += self.cell(i, 0).str_sws()
-        line += Cross.TLXX + "\n"
         return line

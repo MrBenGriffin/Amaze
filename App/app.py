@@ -3,7 +3,7 @@ from Maze.maze import Maze
 from Bod.miner import Miner
 from Bod.lister import Lister
 from Bod.slaver import Slaver
-from Bod.gamer import Gamer, Goal
+from Bod.gamer import Gamer
 from App.config import Config
 
 

@@ -22,6 +22,7 @@ class Miner(Mover):
     """
     def __init__(self):
         super().__init__()
+        self.is_miner = True
         self.halo = "green"
         self.body = "white"
 

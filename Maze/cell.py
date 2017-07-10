@@ -1,5 +1,4 @@
 # encoding: utf-8
-from Maze.cross import Cross
 from Maze.util import Com
 import random
 
@@ -110,7 +109,6 @@ class Cell:
 
     # make_door_in is done on self's side.
     def make_door_in(self, com, kind=None):
-        cell = None
         if com == Com.C or com == Com.F:
             cell = self.floors[com].make_hole(com)
             if cell:
@@ -136,45 +134,6 @@ class Cell:
         result = self.rune
         self.rune = the_rune
         return result
-
-    def str_nwn(self):
-
-        right = bottom = left = top = False
-        north_wall = self.walls[Com.N]
-        west_wall = self.walls[Com.W]
-
-        if north_wall:
-            n_cell = north_wall.other(self)
-            right = north_wall.is_wall()
-            if n_cell and n_cell.walls[Com.W]:
-                top = n_cell.walls[Com.W].is_wall()
-        if west_wall:
-            w_cell = west_wall.other(self)
-            bottom = west_wall.is_wall()
-            if w_cell and w_cell.walls[Com.N]:
-                left = w_cell.walls[Com.N].is_wall()
-
-        nw = Cross(top, left, bottom, right)
-        if right:
-            n = Cross.XLXR
-        else:
-            n = " "
-        return nw.cross + n
-
-    def str_sws(self):
-        left = bottom = False
-        right = self.walls[Com.S].is_wall()
-        top = self.walls[Com.W].is_wall()
-        w_cell = self.walls[Com.W].other(self)
-        if w_cell:
-            left = True
-        return Cross(top, left, bottom, right).cross + Cross.XLXR
-
-    def str_ne(self):
-        return Cross(self.walls[Com.N].other(self) is not None,
-                     self.walls[Com.N].is_wall(),
-                     True,
-                     False).cross
 
     def __cmp__(self, other):
         return self.dim == other.dim

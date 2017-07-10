@@ -15,13 +15,18 @@ class Mover(object):
         self.ids = []
         self.canvases = []
         self.levels = 1
+        self.is_miner = False
+        self.maze = None
         self.halo = None
         self.body = None
         self.size = Cell.size // 2
         self.offset = 10 + Cell.size // 4
 
     def run(self):
-        self._run()
+        if self.is_miner and not self.track and not self.maze.mined:
+            self.maze.mined()
+        else:
+            self._run()
 
     def dig(self, cell):
         cell.mined = True
@@ -33,9 +38,10 @@ class Mover(object):
     def finished(self):
         return not self.track
 
-    def tk_init(self, maze_levels):
-        self.levels = len(maze_levels)
-        for level in maze_levels:
+    def tk_init(self, maze):
+        self.maze = maze
+        self.levels = len(maze.levels)
+        for level in maze.levels:
             self.canvases.append(level.tk_level)
             canvas = level.tk_level
             canvas_id = canvas.create_oval(0, 0, self.size, self.size, outline=self.halo,

@@ -12,6 +12,7 @@ class Lister(Mover):
     """
     def __init__(self):
         super().__init__()
+        self.is_miner = True
         self.halo = "yellow"
         self.body = "green"
 

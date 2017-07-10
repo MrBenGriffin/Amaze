@@ -27,31 +27,31 @@ class Config:
         self._maze_height_entry = Entry(self._frame, validate="key",
                                         validatecommand=(self.valid, '%P', '%i', '%d'))
 
-        self._maze_size_label = Label(self._frame, text="Maze Cell Size")
-        self._maze_size_entry = Entry(self._frame, validate="key",
-                                      validatecommand=(self.valid, '%P', '%i', '%d'))
-
         self._maze_levels_label = Label(self._frame, text="Maze Levels")
         self._maze_levels_entry = Entry(self._frame, validate="key",
                                         validatecommand=(self.valid, '%P', '%i', '%d'))
+
+        self._maze_size_label = Label(self._frame, text="Maze Cell Size")
+        self._maze_size_entry = Entry(self._frame, validate="key",
+                                      validatecommand=(self.valid, '%P', '%i', '%d'))
 
         self._miner = Button(self._frame, text="Miner", command=self._do_miner)
         self._lister = Button(self._frame, text="Lister", command=self._do_lister)
         self._slaver = Button(self._frame, text="Slaver", command=self._do_slaver)
 
-        self._maze_width_entry.insert(END, '3')
-        self._maze_height_entry.insert(END, '3')
-        self._maze_size_entry.insert(END, '20')
-        self._maze_levels_entry.insert(END, '4')
+        self._maze_width_entry.insert(END, '40')
+        self._maze_height_entry.insert(END, '6')
+        self._maze_size_entry.insert(END, '28')
+        self._maze_levels_entry.insert(END, '5')
 
         self._maze_width_label.grid(row=0, column=0, sticky=E)
         self._maze_width_entry.grid(row=0, column=1, columnspan=2)
         self._maze_height_label.grid(row=1, column=0, sticky=E)
         self._maze_height_entry.grid(row=1, column=1, columnspan=2)
-        self._maze_size_label.grid(row=2, column=0, sticky=E)
-        self._maze_size_entry.grid(row=2, column=1, columnspan=2)
-        self._maze_levels_label.grid(row=3, column=0, sticky=E)
-        self._maze_levels_entry.grid(row=3, column=1, columnspan=2)
+        self._maze_levels_label.grid(row=2, column=0, sticky=E)
+        self._maze_levels_entry.grid(row=2, column=1, columnspan=2)
+        self._maze_size_label.grid(row=3, column=0, sticky=E)
+        self._maze_size_entry.grid(row=3, column=1, columnspan=2)
 
         self._maze_show_dig.grid(row=4, columnspan=3)
         self._miner.grid(row=5, column=0)

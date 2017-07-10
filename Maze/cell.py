@@ -37,18 +37,18 @@ class Cell:
         return self
 
     def exits(self):
-        dict_of_exits = self.level_exits()
+        list_of_exits = self.level_exits()
         for compass, floor in self.floors.items():
-            if not floor["solid"]:
-                dict_of_exits[compass] = compass
-        return dict_of_exits
+            if floor and not floor.solid:
+                list_of_exits.append(compass)
+        return list_of_exits
 
     def level_exits(self):
-        dict_of_exits = {}
+        list_of_exits = []
         for compass, wall in self.walls.items():
             if not wall.is_wall():
-                dict_of_exits[compass] = compass
-        return dict_of_exits
+                list_of_exits.append(compass)
+        return list_of_exits
 
     def count_level_exits(self):
         count = 0

@@ -31,7 +31,7 @@ class Maze:
         for level in self.levels:
             level.set_floor(self)
 
-    def mined(self):
+    def do_mined(self):
         # This happens just once after the miners are done.
         # So we can post-process the mine here.
         self.mined = True
@@ -50,6 +50,9 @@ class Maze:
         else:
             while not bod.finished():
                 bod.run()
+                self.do_mined()
+
+
 
     def tk_init(self, root):
         self.tk_maze = root
@@ -68,17 +71,18 @@ class Maze:
                 if not self.mined:
                     bod.tk_paint()
             else:
-                bod.tk_paint()
+                if self.mined:
+                    bod.tk_paint()
         self.tk_maze.after(60, self.animation)
 
     def tk_paint(self):
         for level in self.levels:
             level.tk_paint()
 
-    def __str__(self):
+    def string(self):
         result = ""
         for level in self.levels:
-            result += str(level)
+            result += level.string()
         return result
 
 
@@ -113,10 +117,11 @@ class Level:
             for i in range(self.cells_across+1)]
 
     def erode(self):
-        for wall in self.ns_walls:
-            wall.erode()
-        for wall in self.ew_walls:
-            wall.erode()
+        pass
+        # for wall in self.ns_walls:
+        #     wall.erode()
+        # for wall in self.ew_walls:
+        #     wall.erode()
 
     def set_floor(self, maze):
         self.floors = [[Floor(self.cells[i][j], maze.cell(i, j, self.level + 1))
@@ -149,7 +154,7 @@ class Level:
             for j in range(len(self.cells[i])):
                 self.floors[i][j].tk_paint(self.cells[i][j])
 
-    def __str__(self):  # __str__ method here is just for easy visualisation purposes.
+    def string(self):  # __str__ method here is just for easy visualisation purposes.
         line = "\nLevel %s\n" % (1 + self.level)
         for j in range(self.cells_up+1):  # reversed: print goes from top to bottom..
             line_ns = ""

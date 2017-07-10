@@ -9,7 +9,7 @@ class Goal(Mover):
         self.body = "orange"
 
     def _run(self):
-        self.go(self.track[-1])
+        pass
 
 
 class Gamer(Mover):
@@ -21,7 +21,6 @@ class Gamer(Mover):
     def move(self, com):
         this_cell = self.track.pop()
         next_cell = this_cell.move(com)
-        next_cell = next_cell.stairs()
         self.canvases[next_cell.level.level].focus_set()
         self.track.append(next_cell)
         self.tk_move(next_cell.dim)
@@ -38,6 +37,12 @@ class Gamer(Mover):
     def move_e(self, _):
         self.move(Com.E)
 
+    def move_c(self, _):
+        self.move(Com.C)
+
+    def move_f(self, _):
+        self.move(Com.F)
+
     def tk_init(self, maze_levels):
         super().tk_init(maze_levels)
         for i in range(self.levels):
@@ -45,6 +50,10 @@ class Gamer(Mover):
             self.canvases[i].bind("a", self.move_w)
             self.canvases[i].bind("s", self.move_n)
             self.canvases[i].bind("d", self.move_e)
+            self.canvases[i].bind("q", self.move_c)
+            self.canvases[i].bind("e", self.move_c)
+            self.canvases[i].bind("c", self.move_f)
+            self.canvases[i].bind("x", self.move_f)
         self.canvases[0].focus_set()
 
     def _run(self):

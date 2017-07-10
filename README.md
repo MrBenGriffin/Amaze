@@ -22,28 +22,51 @@ python3 ./gui.py
 python3 ./text.py
 ```
 
-This will generate mazes out of box-drawing characters,
-![Maze](assets/text.png)
+## √ Stairs that go both up and down.
+Multi-level mazes are now mined. Currently each level is below
+the previous one.. (Miner starts on the ground, and digs down)
+![Maze](assets/players.png)
 
-## So far:
-Currently I'm not planning on adding unit tests.  Maybe one day.
+The text application uses unicode characters for stairs.
 
-## Todo:
-So, out of basic simple reasons, I chose tkinter as a gfx fe. 
-There's stuff to love in tkinter for a project of this scale.
+![Maze](assets/stairs.png)
 
-![Maze](assets/maze.png)
+## √ Gamer.
+Bound to the keys w-a-s-d,eq,xc for north, east, west, south, ceiling, floor respectively.
 
-We need a mover class - with two subclasses:
+## What next?
 
+#### Rooms 
+This should be easy enough as a digger option. Sizes and number of doors need to be worked out.
+
+#### Naming
+Room naming - and rune naming.  This is about adding flavour. 
+Probably best to use a faker or create a faker system. It would be really
+cool to have names that correspond to locations/sizes 
+(small room = toilet, top level = attic etc)
+
+#### Doors (with keys)
+Add a key-maker who makes keys (and doors). An early thought was to have 
+the miner be a key-maker, but it's probably best to allow for different roles to be
+done by different bots.
+
+Too much thought has gone into keys - they would be really fun.
+We could have combination keys, to open combination doors.. eg a \ and a / make a V
+but once you have the V you cannot walk through \ or / again.
+
+I still think one should only be able to carry one key at a time. 
+This means dropping keys that aren't being used .. but being careful..
+ 
+## What's done?
+ 
 √ Digger/Miner    - who constructs the maze (and leaves runes lying around)
 
 √ Gamer           - who travels through the maze interactively.
 
-* Robot           - who travels through the maze. automatically.
+√ Robot           - who travels through the maze. automatically.
 
 # Novelty fun: 
-## √ Animated miner
+√ Animated miner (gui)
 
 There are three types of miner so far.
 ## Miner
@@ -57,33 +80,5 @@ The 'Lister' - makes many decisions, many of which are totally trivial.
 ## Slaver
 
 The 'Slaver' - A hybrid, that acts like a Miner for 32/64 turns and then chooses a new spot from the
- list.
-The Slaver, albeit rather nastily named, appears to produce the best mazes so far...
+ list. The Slaver, albeit rather nastily named, appears to produce the best mazes so far...
 ![Maze](assets/slaver.png)
-
-## √ Stairs that go both up and down.
-Multi-level mazes are now mined. Currently each level is below
-the previous one.. (Miner starts on the ground, and digs down)
-![Maze](assets/multilevel.png)
-
-The Gui shows stairs (red go up, blue go down). The text app does NOT show stairs yet.
-
-## √ Gamer.
-Bound to the keys w-a-s-d.
-Running over stairs will take you up or down accordingly.
-
-## Other things to do...
-extra - add 'power runes':  
-A rune can be used just once to open a rune-door.  
-One can carry only one rune at a time.   
-Running over a rune picks it up, (and drops off any currently held)  
-Rune-doors: Are they opened once opened, or do they allow a single transit? 
-Multiple players (sharing a keyboard of course).
-Rooms.
-Monsters.
-Treasure.
-Nethack/Rogue/Dwarf Fortress.... ;-D
-
- 
- 
- 

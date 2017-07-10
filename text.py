@@ -3,7 +3,7 @@ from Bod.slaver import Slaver
 
 
 def maze():
-    the_maze = Maze(70, 40, 8, 0)
+    the_maze = Maze(30, 4, 2, 0)
     the_miner = Slaver()
     the_miner.dig(the_maze.cell(0, 0, 0))
     while not the_miner.finished():
@@ -29,5 +29,5 @@ def menu():
             print("That is an invalid option")
 
 if __name__ == "__main__":
-    # menu()
-    maze()
+    menu()
+    # maze()

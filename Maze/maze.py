@@ -155,7 +155,7 @@ class Level:
                 self.floors[i][j].tk_paint(self.cells[i][j])
 
     def string(self):  # __str__ method here is just for easy visualisation purposes.
-        line = "\nLevel %s\n" % (1 + self.level)
+        line = "Level %s\n" % (1 + self.level)
         for j in range(self.cells_up+1):  # reversed: print goes from top to bottom..
             line_ns = ""
             line_ew = ""

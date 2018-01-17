@@ -3,7 +3,7 @@
 
 A Simple learning project.
 
-```By Ben & Tay & Cheddies```
+```By Ben & Tay & Cheddies & Harrisson & Jake```
 ## Requires:
 Python 3  
 tkinter How to install( http://www.tkdocs.com/tutorial/install.html )  

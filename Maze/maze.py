@@ -52,8 +52,6 @@ class Maze:
                 bod.run()
                 self.do_mined()
 
-
-
     def tk_init(self, root):
         self.tk_maze = root
         self.tk_maze.title("Maze")

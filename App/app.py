@@ -25,18 +25,18 @@ class App(object):
         the_maze = Maze(cells_across, cells_up, levels, cell_size)
         the_maze.tk_init(maze_window)
         if digger == 1:
-            self.miner = Miner()
+            self.miner = Miner(the_maze)
         elif digger == 2:
-            self.miner = Lister()
+            self.miner = Lister(the_maze)
         else:
-            self.miner = Slaver()
-        self.miner.dig(the_maze.cell(0, 0, 0))
-        self.goal = Goal()
-        self.gamer = Gamer()
-        self.robot = Robot()
+            self.miner = Slaver(the_maze)
+        self.miner.dig(the_maze.at(Maze.start))
+        self.goal = Goal(the_maze)
+        self.gamer = Gamer(the_maze)
+        self.robot = Robot(the_maze)
 
-        self.gamer.go(the_maze.cell(0, 0, 0))
-        self.robot.go(the_maze.cell(0, 0, 0))
+        self.gamer.go(the_maze.at(Maze.start))
+        self.robot.go(the_maze.at(Maze.start))
         self.goal.go(the_maze.cell(cells_across - 1, cells_up - 1, levels - 1))
         self.gamer.goal = self.goal
         self.robot.goal = self.goal

@@ -1,5 +1,6 @@
 import random
 from Bod.mover import Mover
+from Thing.door import Door
 
 
 class Slaver(Mover):
@@ -9,12 +10,14 @@ class Slaver(Mover):
         (1) Act like the Miner for 16 (or 32) turns.
         (2) Act like the Lister for 1 turn.
     """
-    def __init__(self):
-        super().__init__()
+
+    def __init__(self, maze):
+        super().__init__(maze)
         self.is_miner = True
         self.halo = "white"
         self.body = "black"
         self.sequence = 0
+        self.forward = 0
 
     def _run(self):
         self.sequence += 1
@@ -27,12 +30,22 @@ class Slaver(Mover):
                     the_wall = random.choice(walls_to_dig)
                     next_cell = this_cell.make_door_in(the_wall)
                     if next_cell:
+                        if this_cell.is_a_passage() and self.forward > 9:
+                            Door.make(self.maze, this_cell)
                         self.track.append(next_cell)
+                        self.forward += 1
                     else:
                         the_wall = None
                 else:
+                    if this_cell.is_a_passage() and self.forward > 9:
+                        Door.make(self.maze, this_cell)
+                    # else:
+                    #     if this_cell and self.forward > 4:
+                    #         self.maze.add_thing(this_cell, Key())
+                    self.forward = 0
                     self.track.pop()
             else:
+                self.forward = 0
                 cell_index = random.randrange(len(self.track))
                 this_cell = self.track[cell_index]
                 walls_to_dig = this_cell.walls_that_can_be_dug()
@@ -40,7 +53,10 @@ class Slaver(Mover):
                     the_wall = random.choice(walls_to_dig)
                     next_cell = this_cell.make_door_in(the_wall)
                     if next_cell:
+                        if this_cell.is_a_passage() and self.forward > 9:
+                            Door.make(self.maze, this_cell)
                         self.track.append(next_cell)
+                        self.forward += 1
                     else:
                         the_wall = None
                 else:

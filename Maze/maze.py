@@ -15,6 +15,7 @@ class Maze:
         (Not hard to change this).
 
     """
+    start = (0, 0, 0)
 
     def __init__(self, cells_across, cells_up, depth, cell_size):
         self.cells_across = cells_across
@@ -23,6 +24,7 @@ class Maze:
         self.mined = False
         self.tk_maze = None
         self.bods = []
+        self.things = []
         self.levels = []
         # print("Making maze:", cells_across, cells_up, depth)
         for level in range(self.depth):
@@ -38,10 +40,18 @@ class Maze:
         for level in self.levels:
             level.erode()
 
+    def at(self, index):
+        return self.cell(index[0], index[1], index[2])
+
     def cell(self, cells_across, cells_up, level=None):
         if level is None or level not in range(0, self.depth):
             return None
         return self.levels[level].cell(cells_across, cells_up)
+
+    def add_thing(self, cell, thing):
+        if self.tk_maze:
+            self.things.append(thing)
+            thing.tk_init(self, cell)
 
     def add_bod(self, bod, show):
         if show and self.tk_maze:
@@ -71,6 +81,8 @@ class Maze:
             else:
                 if self.mined:
                     bod.tk_paint()
+        for thing in self.things:
+            thing.tk_paint()
         self.tk_maze.after(60, self.animation)
 
     def tk_paint(self):

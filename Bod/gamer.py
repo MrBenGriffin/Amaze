@@ -4,8 +4,8 @@ from Maze.util import Com
 
 class Goal(Mover):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, maze):
+        super().__init__(maze)
         self.halo = "red"
         self.body = "orange"
 
@@ -16,8 +16,8 @@ class Goal(Mover):
 class Gamer(Mover):
     moving = Com.X
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, maze):
+        super().__init__(maze)
         self.moving = Com.X
         self.halo = "white"
         self.body = "blue"

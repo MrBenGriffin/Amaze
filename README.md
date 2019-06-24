@@ -36,10 +36,10 @@ Bound to the keys w-a-s-d,eq,xc for north, east, west, south, ceiling, floor res
 
 ## What next?
 
-#### Rooms 
+#### ? Rooms 
 This should be easy enough as a digger option. Sizes and number of doors need to be worked out.
 
-#### Naming
+#### ? Naming
 Room naming - and rune naming.  This is about adding flavour. 
 Probably best to use a faker or create a faker system. It would be really
 cool to have names that correspond to locations/sizes 

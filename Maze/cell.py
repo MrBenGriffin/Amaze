@@ -81,7 +81,7 @@ class Cell:
             return self.floors[Com.F].cells[Com.C]
         if self.floors[Com.C] and not self.floors[Com.C].solid:
             return self.floors[Com.C].cells[Com.F]
-        return self
+        return []
 
     def good_for_stairs(self):
         """
@@ -103,6 +103,15 @@ class Cell:
                 walls = self.stairs_to_be_dug(Com.C, walls)
                 walls = self.stairs_to_be_dug(Com.F, walls)
         return walls
+
+    def is_a_passage(self):
+        exits = self.walls_that_can_be_dug()
+        if not exits:
+            exits = self.stairs()
+            if not exits:
+                exits = self.level_exits()
+                return len(exits) == 2 and exits[0] == exits[1].opposite
+        return False
 
     # make_door_in is done on self's side.
     def make_door_in(self, com, kind=None):

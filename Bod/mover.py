@@ -10,18 +10,18 @@ class Mover(object):
     def _run(self):
         pass
 
-    def __init__(self):
+    def __init__(self, maze):
         self.track = []
         self.ids = []
         self.canvases = []
         self.levels = 1
         self.is_miner = False
-        self.maze = None
+        self.maze = maze
         self.halo = None
         self.body = None
         self.goal = None
-        self.size = Cell.size // 2
-        self.offset = 10 + Cell.size // 4
+        self.size = Cell.size - Cell.size // 4
+        self.offset = Cell.size // 4
 
     def run(self):
         if self.is_miner and not self.track and not self.maze.mined:
@@ -45,10 +45,14 @@ class Mover(object):
         for level in maze.levels:
             self.canvases.append(level.tk_level)
             canvas = level.tk_level
-            canvas_id = canvas.create_oval(0, 0, self.size, self.size, outline=self.halo,
+            canvas_id = canvas.create_oval(self.offset, self.offset, self.size, self.size, outline=self.halo,
                                            fill=self.body, state=HIDDEN)
-            canvas.move(canvas_id, self.offset, self.offset)
             self.ids.append(canvas_id)
+
+    def cell(self):
+        if not self.track:
+            return None
+        return self.track[-1]
 
     def tk_move(self, dim):
         if not self.finished():

@@ -10,8 +10,8 @@ class Lister(Mover):
         (2) Choose a cell at random from the list.
         (3) Knock a wall out if there is one, else remove it from the list.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, maze):
+        super().__init__(maze)
         self.is_miner = True
         self.halo = "yellow"
         self.body = "green"

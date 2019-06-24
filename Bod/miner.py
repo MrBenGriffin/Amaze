@@ -20,8 +20,8 @@ class Miner(Mover):
         local stack (called self.track) instead. This now allows us to animate the Miner.
 
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, maze):
+        super().__init__(maze)
         self.is_miner = True
         self.halo = "green"
         self.body = "white"

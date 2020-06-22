@@ -39,10 +39,12 @@ class Config:
         self._lister = Button(self._frame, text="Lister", command=self._do_lister)
         self._slaver = Button(self._frame, text="Slaver", command=self._do_slaver)
 
-        self._maze_width_entry.insert(END, '38')
-        self._maze_height_entry.insert(END, '8')
-        self._maze_size_entry.insert(END, '48')
-        self._maze_levels_entry.insert(END, '2')
+        self._root.bind('<Return>', (lambda e, b=self._slaver: b.invoke()))
+
+        self._maze_width_entry.insert(END, '60')
+        self._maze_height_entry.insert(END, '20')
+        self._maze_size_entry.insert(END, '50')
+        self._maze_levels_entry.insert(END, '1')
 
         self._maze_width_label.grid(row=0, column=0, sticky=E)
         self._maze_width_entry.grid(row=0, column=1, columnspan=2)
@@ -57,6 +59,9 @@ class Config:
         self._miner.grid(row=5, column=0)
         self._lister.grid(row=5, column=1)
         self._slaver.grid(row=5, column=2)
+
+    def place(self, x, y):
+        self._frame.place(x, y)
 
     def _do_miner(self):
         self._get_size(1)

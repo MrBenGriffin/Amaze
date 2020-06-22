@@ -1,7 +1,5 @@
 import random
 from Bod.mover import Mover
-from Thing.door import Door
-
 
 class Slaver(Mover):
     """
@@ -27,21 +25,10 @@ class Slaver(Mover):
                 this_cell = self.track[-1]
                 walls_to_dig = this_cell.walls_that_can_be_dug()
                 if walls_to_dig:
-                    the_wall = random.choice(walls_to_dig)
-                    next_cell = this_cell.make_door_in(the_wall)
-                    if next_cell:
-                        if this_cell.is_a_passage() and self.forward > 9:
-                            Door.make(self.maze, this_cell)
-                        self.track.append(next_cell)
-                        self.forward += 1
-                    else:
-                        the_wall = None
+                    the_wall = self.do_mine(walls_to_dig, this_cell)
                 else:
-                    if this_cell.is_a_passage() and self.forward > 9:
-                        Door.make(self.maze, this_cell)
-                    # else:
-                    #     if this_cell and self.forward > 4:
-                    #         self.maze.add_thing(this_cell, Key())
+                    # if this_cell.is_a_passage() and self.forward > 4:
+                    #     Gate.make(self.maze, this_cell)
                     self.forward = 0
                     self.track.pop()
             else:
@@ -50,14 +37,18 @@ class Slaver(Mover):
                 this_cell = self.track[cell_index]
                 walls_to_dig = this_cell.walls_that_can_be_dug()
                 if walls_to_dig:
-                    the_wall = random.choice(walls_to_dig)
-                    next_cell = this_cell.make_door_in(the_wall)
-                    if next_cell:
-                        if this_cell.is_a_passage() and self.forward > 9:
-                            Door.make(self.maze, this_cell)
-                        self.track.append(next_cell)
-                        self.forward += 1
-                    else:
-                        the_wall = None
+                    the_wall = self.do_mine(walls_to_dig, this_cell)
                 else:
                     del self.track[cell_index]
+
+    def do_mine(self, walls_to_dig, this_cell):
+        the_wall = random.choice(walls_to_dig)
+        next_cell = this_cell.make_door_in(the_wall)
+        if next_cell:
+            # if this_cell.is_a_passage() and self.forward > 4:
+            #     Gate.make(self.maze, this_cell)
+            self.track.append(next_cell)
+            self.forward += 1
+        else:
+            the_wall = None
+        return the_wall

@@ -9,6 +9,8 @@ class Cell:
     last_mined = None
 
     def __init__(self, dim, wns, wew, level):
+        self.key  = None  # No key on initialisation.
+        self.gate = None  # No rune on initialisation.
         self.rune = None  # No rune on initialisation.
         self.dim = dim
         self.level = level
@@ -27,13 +29,18 @@ class Cell:
     def name(self):
         return str(self.dim)
 
-    def move(self, com):
+    def move(self, com, key_list):
         if com in self.floors and self.floors[com] and not self.floors[com].solid:
             return self.floors[com].cells[com.opposite]
         if com in self.walls and self.walls[com]:
             wall = self.walls[com]
             if not wall.is_wall():
-                return wall.cells[com]
+                next_cell = wall.cells[com]
+                if next_cell.gate:
+                    return self if next_cell.gate.unlocked_with not in key_list else next_cell
+                if next_cell.key:
+                    key_list.add(next_cell.key.name)
+                return next_cell
         return self
 
     def exits(self):

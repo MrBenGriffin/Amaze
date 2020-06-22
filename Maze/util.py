@@ -49,8 +49,11 @@ class Dim:
         else:
             self.z = z
 
+    def tuple(self) -> tuple:
+        return tuple((self.x, self.y, self.z))
+
     def __str__(self):
-        return "%02x\n%02x" % (self.x, self.y)
+        return "%02x\n%02y\n%02z" % (self.x, self.y, self.z)
 
     def __cmp__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z

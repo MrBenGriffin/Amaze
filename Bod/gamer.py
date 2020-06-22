@@ -1,18 +1,6 @@
 from Bod.mover import Mover
 from Maze.util import Com
 
-
-class Goal(Mover):
-
-    def __init__(self, maze):
-        super().__init__(maze)
-        self.halo = "red"
-        self.body = "orange"
-
-    def _run(self):
-        pass
-
-
 class Gamer(Mover):
     moving = Com.X
 
@@ -24,7 +12,7 @@ class Gamer(Mover):
 
     def move(self, com):
         this_cell = self.track.pop()
-        next_cell = this_cell.move(com)
+        next_cell = this_cell.move(com, self.keys)
         if this_cell != next_cell:
             exits = next_cell.exits()
             if len(exits) > 2:
@@ -43,23 +31,18 @@ class Gamer(Mover):
 
     def move_s(self, _):
         self.moving = Com.S
-#        self.move(Com.S)
 
     def move_w(self, _):
         self.moving = Com.W
-#        self.move(Com.W)
 
     def move_e(self, _):
         self.moving = Com.E
-    #       self.move(Com.E)
 
     def move_c(self, _):
         self.moving = Com.C
-#        self.move(Com.C)
 
     def move_f(self, _):
         self.moving = Com.F
-#        self.move(Com.F)
 
     def tk_init(self, maze_levels):
         super().tk_init(maze_levels)
@@ -74,4 +57,3 @@ class Gamer(Mover):
 
     def _run(self):
         self.move(self.moving)
-#       pass

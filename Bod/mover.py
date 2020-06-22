@@ -11,9 +11,11 @@ class Mover(object):
         pass
 
     def __init__(self, maze):
+        self.keys = set()
         self.track = []
         self.ids = []
         self.canvases = []
+        self.tk_status = None
         self.levels = 1
         self.is_miner = False
         self.maze = maze
@@ -34,10 +36,14 @@ class Mover(object):
         self.go(cell)
 
     def go(self, cell):
+        if cell.key:
+            cell.key.select(self.keys)
+        if cell.gate:
+            pass
         self.track.append(cell)
 
     def finished(self):
-        return not self.track or (self.goal and self.track[-1] == self.goal.track[-1])
+        return not self.track or (self.goal and self.track[-1] == self.goal)
 
     def tk_init(self, maze):
         self.maze = maze
@@ -45,9 +51,13 @@ class Mover(object):
         for level in maze.levels:
             self.canvases.append(level.tk_level)
             canvas = level.tk_level
-            canvas_id = canvas.create_oval(self.offset, self.offset, self.size, self.size, outline=self.halo,
-                                           fill=self.body, state=HIDDEN)
-            self.ids.append(canvas_id)
+            id = self.tk_object(canvas)
+            self.canvases[level.level].itemconfig(id, state=HIDDEN)
+            self.ids.append(id)
+
+    def tk_object(self, canvas):
+        return canvas.create_oval(self.offset, self.offset, self.size, self.size,
+                                  outline=self.halo, fill=self.body, state=NORMAL)
 
     def cell(self):
         if not self.track:
@@ -62,12 +72,17 @@ class Mover(object):
             canvas_id = self.ids[dim.z]
             canvas.coords(canvas_id, x, y, x + self.size, y + self.size)
 
+    def tk_paint_status(self):
+        separator = ' '
+        self.tk_status[1].set(separator.join(self.keys))
+
     def tk_paint(self):
         dim = None
         if self.finished() and not self.is_miner:
-            dim = self.track[-1].dim
-            self.canvases[dim.z].itemconfig(self.ids[dim.z], state=NORMAL, width=4)
-            self.tk_move(dim)
+            if self.track:
+                dim = self.track[-1].dim
+                self.canvases[dim.z].itemconfig(self.ids[dim.z], state=NORMAL, width=4)
+                self.tk_move(dim)
 
         if not self.finished():
             dim = self.track[-1].dim

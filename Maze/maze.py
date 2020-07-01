@@ -10,7 +10,6 @@ class Maze:
         Each Maze level has it's own Canvas..
         For the time being, each level uses the same dimensions..
         (Not hard to change this).
-
     """
     start = (0, 0, 0)
 
@@ -21,6 +20,7 @@ class Maze:
         self.depth = depth
         self.space = 20
         self.offset = self.space // 2
+        self.cell_size = cell_size
         self.mined = False
         self.tk_maze = None
         self.tk_status = None
@@ -50,7 +50,7 @@ class Maze:
             return None
         return self.levels[level].cell(cells_across, cells_up)
 
-    def add_thing(self, cell: object, thing: object) -> object:
+    def add_thing(self, cell: object, thing: object):
         if self.tk_maze:
             from Thing.gate import Gate
             if isinstance(thing, Gate):
@@ -76,8 +76,8 @@ class Maze:
         self.tk_maze.title("Maze")
         for level in self.levels:
             level.tk_level = Canvas(self.tk_maze,
-                                    width=  self.space + Cell.size * (self.cells_across + 0),
-                                    height= self.space + Cell.size * (self.cells_up + 0),
+                                    width=self.space + Cell.size * (self.cells_across + 0),
+                                    height=self.space + Cell.size * (self.cells_up + 0),
                                     bg='gray')
             level.tk_level.grid(columns=1, rows=1)
         self.tk_maze.after(0, self.animation)
@@ -87,8 +87,7 @@ class Maze:
         self.tk_status.title("Status")
         row_id = 0
         for bod in self.bods:
-            icon = Canvas(self.tk_status, width=Cell.size, height= Cell.size, bg='gray')
-            # bod.tk_status =
+            icon = Canvas(self.tk_status, width=Cell.size, height=Cell.size, bg='gray')
             icon.grid(row=row_id, column=0)
             bod.tk_object(icon)
             key_label = Label(self.tk_status, text="Keys:").grid(row=row_id, column=1)
@@ -125,5 +124,3 @@ class Maze:
         for level in self.levels:
             result += level.string()
         return result
-
-

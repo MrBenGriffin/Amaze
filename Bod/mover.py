@@ -22,8 +22,8 @@ class Mover(object):
         self.halo = None
         self.body = None
         self.goal = None
-        self.size = Cell.size - Cell.size // 4
-        self.offset = Cell.size // 4
+        self.size = maze.cell_size * 0.66
+        self.offset = (maze.cell_size - self.size) // 2
 
     def run(self):
         if self.is_miner and not self.track and not self.maze.mined:
@@ -65,9 +65,9 @@ class Mover(object):
         return self.track[-1]
 
     def tk_move(self, dim):
-        if not self.finished():
-            x = dim.x * Cell.size + self.offset
-            y = dim.y * Cell.size + self.offset
+        # if not self.finished():
+            x = dim.x * self.maze.cell_size + self.offset + self.maze.offset
+            y = dim.y * self.maze.cell_size + self.offset + self.maze.offset
             canvas = self.canvases[dim.z]
             canvas_id = self.ids[dim.z]
             canvas.coords(canvas_id, x, y, x + self.size, y + self.size)
@@ -79,10 +79,9 @@ class Mover(object):
     def tk_paint(self):
         dim = None
         if self.finished() and not self.is_miner:
-            if self.track:
-                dim = self.track[-1].dim
-                self.canvases[dim.z].itemconfig(self.ids[dim.z], state=NORMAL, width=4)
-                self.tk_move(dim)
+            dim = self.goal.dim
+            self.tk_move(self.goal.dim)
+            self.canvases[dim.z].itemconfig(self.ids[dim.z], state=NORMAL, width=4)
 
         if not self.finished():
             dim = self.track[-1].dim

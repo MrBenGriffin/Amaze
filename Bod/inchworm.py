@@ -25,12 +25,13 @@ class Inchworm(Mover):
             self._traverse()
         return self.track
 
-    def distances(self, start, stops=[]):
+    # measure all distances from the start point. Do not include or go beyond stops.
+    def distances(self, start, stops=[], maximum=None) -> dict:
         self._reset()
         log = {start.dim.tuple(): 0}
         self.stops = stops
         self.go(start)
-        while self.track and self.track[-1] not in self.stops:
+        while self.track and self.track[-1] not in self.stops and (not maximum or len(self.track) <= maximum):
             self._traverse()
             if self.track:
                 last_cell = self.track[-1].dim.tuple()
@@ -40,6 +41,40 @@ class Inchworm(Mover):
         for k in log:
             result[log[k]].append(k)
         return result
+
+    def cull(self, distances):
+        sorted_keys = sorted(distances.keys())
+        for k in sorted_keys:
+            if distances[k] and k + 1 in distances and distances[k + 1]:
+                non_adjacent = []
+                higher = distances[k+1]
+                for d in distances[k]:
+                    found = False
+                    neighbours = self.maze.at(d).neighbours()
+                    for neighbour in neighbours:
+                        idx = neighbour.dim.tuple()
+                        if idx in higher:
+                            found = True
+                    if not found:
+                        non_adjacent.append(d)
+                if non_adjacent:
+                    distances[k] = non_adjacent
+                else:
+                    del distances[k]
+
+
+        # for key in range(number):
+        #     for distance in heavy_first:
+        #         cell_list = a_b[distance]
+        #         for cell_index in cell_list:
+        #             if cell_index not in self.master_track:
+        #                 contender = self.maze.at(cell_index)
+        #                 if not contender.gate and not contender.key:
+        #                     key_to_gate = worm.make_track(contender, stops[-1])
+        #                     if len(key_to_gate) > self.min_key_gate_distance:
+        #                         result.append(contender)
+        # return result
+
 
     def _traverse(self):
         this_cell = self.track[-1]

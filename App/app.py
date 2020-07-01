@@ -18,7 +18,6 @@ class App(object):
         self.miner = None
         self.gamer = None
         self.robot = None
-        # self.goal = None
         self.goal_cell = None
         self.root = tk_root
         self.maze_windows = []
@@ -61,18 +60,18 @@ class App(object):
         self.goal_cell = the_maze.at(choice(far_cells))
 
         # Make 20 gates
-        gate_maker = Gatemaker(the_maze)
-        gate_maker.make(20, worm, start_cell, self.goal_cell, cell_distances)
+        gate_maker = Gatemaker(the_maze, worm)
+        gate_maker.make(3, start_cell, self.goal_cell)
 
         self.gamer = Gamer(the_maze)
-        self.robot = Robot(the_maze)
+        # self.robot = Robot(the_maze)
         self.gamer.go(the_maze.at(Maze.start))
-        self.robot.go(the_maze.at(Maze.start))
+        # self.robot.go(the_maze.at(Maze.start))
         self.gamer.goal = self.goal_cell
-        self.robot.goal = self.goal_cell
+        # self.robot.goal = self.goal_cell
         the_maze.add_thing(self.goal_cell, Goal(the_maze))
         the_maze.add_bod(self.gamer)
-        the_maze.add_bod(self.robot)
+        # the_maze.add_bod(self.robot)
         the_maze.tk_init_bods(bods_window)
         the_maze.tk_paint()
 
@@ -81,6 +80,7 @@ class App(object):
         the_root = Tk()
         App(the_root)
         the_root.mainloop()
+
 
 if __name__ == "__main__":
     App.run()

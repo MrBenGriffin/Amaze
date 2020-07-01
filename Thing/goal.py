@@ -6,11 +6,11 @@ class Goal(Item):
         super().__init__()
         self.cell = cell
 
-    def offset(self):
-        return 4
+    def tk_init(self, maze, cell, size=0.75):
+        super().tk_init(maze, cell, size)
 
     def shape(self, canvas):
         fill_colour = "green"
         return [
-            canvas.create_rectangle(self.offset(), self.offset(), self.size // 2, self.size // 2, width=2, outline="yellow", fill=fill_colour),
+            canvas.create_rectangle(0, 0, self.size, self.size, width=2, outline="yellow", fill=fill_colour)
         ]

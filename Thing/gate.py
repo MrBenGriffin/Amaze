@@ -4,24 +4,24 @@ from Thing.item import Item
 # from Maze.maze import Maze
 
 # We need to add Gates - these can go on cells where there is an entrance/exit.
-# Doors may be one-directional
+# Gates don't -need- to be directional if we use key exchanges, because one can only go forward with the correct key
+# ... a ... A ...a->b ... B ... b->c ... C ...c->a A, etc.
 
 class Gate(Item):
 
     def __init__(self, bi_directional, key):
         super().__init__()
         self.unlocked_with = key.name
-        self.bi_directional = bi_directional
+        # self.bi_directional = bi_directional
 
-    def offset(self):
-        return 0
-
-    def tk_init(self, maze, cell):
-        super().tk_init(maze, cell)
+    def tk_init(self, maze, cell, size=0.8):
+        super().tk_init(maze, cell, size)
 
     def shape(self, canvas):
-        outline_colour = "white" if self.bi_directional else "red"
+        outline_colour = "white"  # if self.bi_directional else "red"
+        text_scale = int(self.size * 0.8)
+        text_offset = self.size - text_scale * 0.66
         return [
-            canvas.create_rectangle(0, 0, self.size, self.size, width=4, fill="green", outline=outline_colour),
-            canvas.create_text(self.size // 2, self.size // 2, font=("Monaco", self.size // 3), width=1, text=self.unlocked_with)
+            canvas.create_rectangle(0, 0, self.size, self.size, width=int(self.size * 0.1), fill="green", outline=outline_colour),
+            canvas.create_text(text_offset, text_offset, font=("Monaco", text_scale), width=1, text=self.unlocked_with)
         ]

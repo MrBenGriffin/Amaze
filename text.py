@@ -1,7 +1,6 @@
 from Maze.maze import Maze
 from Bod.slaver import Slaver
 
-
 def maze():
     the_maze = Maze(30, 4, 2, 0)
     the_miner = Slaver()

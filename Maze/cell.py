@@ -39,23 +39,23 @@ class Cell:
                 if next_cell.gate:
                     return self if next_cell.gate.unlocked_with not in key_list else next_cell
                 if next_cell.key:
-                    key_list.add(next_cell.key.name)
+                    next_cell.key.select(key_list)
+                    # key_list.add(next_cell.key.name)
                 return next_cell
         return self
 
+    def neighbours(self):
+        return [self.floors[c].cells[c] for c in self.floor_exits()] + \
+               [self.walls[c].cells[c] for c in self.level_exits()]
+
     def exits(self):
-        list_of_exits = self.level_exits()
-        for compass, floor in self.floors.items():
-            if floor and not floor.solid:
-                list_of_exits.append(compass)
-        return list_of_exits
+        return self.level_exits() + self.floor_exits()
+
+    def floor_exits(self):
+        return [k for k, v in self.floors.items() if v and not v.solid]
 
     def level_exits(self):
-        list_of_exits = []
-        for compass, wall in self.walls.items():
-            if not wall.is_wall():
-                list_of_exits.append(compass)
-        return list_of_exits
+        return [k for k, v in self.walls.items() if v and not v.is_wall()]
 
     def count_level_exits(self):
         count = 0

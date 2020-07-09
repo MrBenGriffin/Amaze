@@ -9,12 +9,11 @@ class Wall:
     def __init__(self):
         pass
 
-
 class Maze:
-    def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
+    def __init__(self):
+        self.x = 1
+        self.y = 1
+        self.z = 1
         self.cells = {}
         self.scenes = []
 
@@ -49,95 +48,107 @@ class Maze:
 
 class MyDialog(QtWidgets.QDialog):
 
-    def __init__(self, ui):
-        self.ui = ui
+    def __init__(self, form):
+        self.form = form
         self.horizontal_layout = None
-        self.offset = 4
+        self.offset = 12
         self.demi = self.offset // 2
+        self.tmp_idx = 0
         self.levels = 4
+        self.width = 6
+        self.height = 7
         self.cell_size = 48
         self.maze = None
         self.level_tabs = []
         self.level_gx = []
-        self.tabWidget = None
+        self.tab_widget = None
         super().__init__()
 
-    def do_levels(self, geometry):
-        if self.tabWidget is not None:
-            self.reset_tab()
-            for level in range(self.levels):
-                tab = QtWidgets.QWidget()
-                tab.setObjectName(f"T{level}")
-                self.tabWidget.addTab(tab, f"{level + 1}")
-                self.level_tabs.append(tab)
-                scene = QGraphicsScene()
-                self.maze.scenes.append(scene)
-                tab.resize(geometry.width(), geometry.height())
-                gv = QtWidgets.QGraphicsView(scene, tab)
-                gv.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-                gv.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-                gv.setMinimumSize(QtCore.QSize(290, 340))
-                gv.setObjectName(f"L{level}")
-                self.adjust_gx(gv, scene, geometry)
-                self.level_gx.append(gv)
+    def reset_tab(self):
+        self.tmp_idx = 0
+        prev_widget = self.tab_widget
+        self.tab_widget = QtWidgets.QTabWidget(self)
+        if prev_widget:
+            self.tmp_idx = prev_widget.currentIndex()
+            self.horizontal_layout.replaceWidget(prev_widget, self.tab_widget)
+            prev_widget.clear()
+            prev_widget.close()
+        else:
+            self.horizontal_layout.addWidget(self.tab_widget)
+        self.tab_widget.setMinimumSize(QtCore.QSize(310, 380))
+        self.tab_widget.setTabPosition(QtWidgets.QTabWidget.North)
+        self.tab_widget.setObjectName("tab_widget")
+        if self.maze:
+            for lt in self.level_tabs:
+                lt.close()
+            self.level_tabs = []
+            for gx in self.level_gx:
+                gx.close()
+            self.level_gx = []
+            self.maze.scenes = []
+
+    def draw_maze(self, geometry):
+        self.reset_tab()
+        for level in range(self.levels):
+            tab = QtWidgets.QWidget()
+            tab.setObjectName(f"T{level}")
+            self.tab_widget.addTab(tab, f"{level + 1}")
+            self.level_tabs.append(tab)
+            scene = QGraphicsScene()
+            self.maze.scenes.append(scene)
+            tab.resize(geometry.width(), geometry.height())
+            gv = QtWidgets.QGraphicsView(scene, tab)
+            gv.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            gv.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            gv.setMinimumSize(QtCore.QSize(290, 340))
+            gv.setObjectName(f"L{level}")
+            self.adjust_gx(gv, scene, geometry)
+            self.level_gx.append(gv)
+        self.maze.reset(self.width, self.height, self.levels)
+        self.maze.draw(self.demi, self.cell_size)
+        for idx in range(self.levels):
+            self.adjust_gx(self.level_gx[idx], self.maze.scenes[idx], geometry)
+        self.tab_widget.setCurrentIndex(self.tmp_idx % self.levels)
 
     def depth_change(self):
         if self.level_tabs:
-            idx = self.tabWidget.currentIndex()
+            idx = self.tab_widget.currentIndex()
             dt = QRect(self.level_tabs[idx].frameGeometry())
-            self.levels = self.ui.fields['Levels'].value()
-            self.do_levels(dt)
+            self.levels = self.form.fields['Levels'].value()
             self.level_resize()
 
     def level_resize(self):
+        self.tab_widget.hide()
         if self.level_tabs:
-            self.cell_size = self.ui.fields['Size'].value()
-            idx = self.tabWidget.currentIndex()
-            dt = self.level_tabs[idx].frameGeometry()
+            idx = self.tab_widget.currentIndex()
+            dt = QRect(self.level_tabs[idx].frameGeometry())
+            self.cell_size = self.form.fields['Size'].value()
+            self.width = ceil((dt.width() - self.offset) // self.cell_size)
+            self.height = ceil((dt.height() - self.offset) // self.cell_size)
+            self.form.fields['Width'].setText(f"{self.width}")
+            self.form.fields['Height'].setText(f"{self.height}")
+            self.draw_maze(dt)
+        self.tab_widget.show()
+        self.update()
 
-            x = ceil((dt.width() - self.offset) // self.cell_size)
-            y = ceil((dt.height() - self.offset) // self.cell_size)
-            self.ui.fields['Width'].setText(f"{x}")
-            self.ui.fields['Height'].setText(f"{y}")
-            self.maze.reset(x, y, self.levels)
-            self.maze.draw(self.demi, self.cell_size)
-            for idx in range(self.levels):
-                self.adjust_gx(self.level_gx[idx], self.maze.scenes[idx], dt)
-            self.level_tabs[idx].update()
 
     def adjust_gx(self, gx, scene, frame):
         # this frame is the tab container.
         gx.resize(int(frame.width()), int(frame.height()))
-        gx.mapFromScene(scene.sceneRect())
+        # gx.mapFromScene(scene.sceneRect())
         # don't seem to need the following
-        # scene.setSceneRect(qr)
         gr = gx.frameGeometry()
         sr = scene.sceneRect()
         cp = gr.center()
         sr.moveCenter(cp)
-        scene.move(sr.topLeft())
-        # qr = gx.frameGeometry()  # so this is the gx rect.
-        # cp = frame.center()  # move the gx rect to the centre of the frame.
-        # qr.moveCenter(cp)  #
-        # gx.move(qr.topLeft())
+        scene.setSceneRect(sr)
 
     def resizeEvent(self, event):
         self.level_resize()
         super().resizeEvent(event)
 
-    def reset_tab(self):
-        self.tabWidget.clear()
-        self.tabWidget.setMinimumSize(QtCore.QSize(310, 380))
-        self.tabWidget.setTabPosition(QtWidgets.QTabWidget.North)
-        self.tabWidget.setObjectName("tabWidget")
-        self.tabWidget.setCurrentIndex(0)
-        if self.maze:
-            self.level_tabs = []
-            self.level_gx = []
-            self.maze.scenes = []
-
     def setup(self):
-        self.maze = Maze(6, 7, self.levels)
+        self.maze = Maze()
         self.setWindowTitle("Configure")
         self.setObjectName("Dialog")
         size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -147,17 +158,20 @@ class MyDialog(QtWidgets.QDialog):
         self.setSizePolicy(size_policy)
         self.horizontal_layout = QtWidgets.QHBoxLayout(self)
         self.horizontal_layout.setObjectName("horizontal_layout")
-        self.tabWidget = QtWidgets.QTabWidget(self)
-        self.horizontal_layout.addWidget(self.tabWidget)
-        # self.reset_tab()
-        self.ui.configure(self)
-        self.ui.fields['Size'].valueChanged.connect(self.level_resize)
-        self.ui.fields['Levels'].valueChanged.connect(self.depth_change)
+
         dt = QRect(0, 0, 304, 351)
-        self.do_levels(dt)
+        self.draw_maze(dt)
+
+        self.form.widget = QtWidgets.QWidget(self)
+        self.form.configure()
+        self.horizontal_layout.addWidget(self.form.widget)
+        self.form.fields['Size'].valueChanged.connect(self.level_resize)
+        self.form.fields['Levels'].valueChanged.connect(self.depth_change)
+        self.form.fields['Size'].setValue(self.cell_size)
+        self.form.fields['Levels'].setValue(self.levels)
 
 
-class Interaction(object):
+class Form(object):
     def __init__(self):
         self.form = None
         self.widget = None
@@ -167,9 +181,7 @@ class Interaction(object):
         self.labels = []
         self.fields = {}
 
-    def configure(self, thing):
-        self.widget = QtWidgets.QWidget(thing)
-        thing.horizontal_layout.addWidget(self.widget)
+    def configure(self):
         self.form = QtWidgets.QFormLayout(self.widget)
         self.form.setObjectName("form")
         self.widget.setMaximumSize(QtCore.QSize(160, 200))
@@ -195,17 +207,11 @@ class Interaction(object):
             self.form.setWidget(field + 1, QtWidgets.QFormLayout.LabelRole, label)
             self.labels.append(label)
 
-        self.fields['Size'].setValue(thing.cell_size)
-        self.fields['Levels'].setValue(thing.levels)
-
-        thing.horizontal_layout.addWidget(self.widget)
-        QtCore.QMetaObject.connectSlotsByName(thing)
-
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    dialog = MyDialog(Interaction())
+    dialog = MyDialog(Form())
     dialog.setup()
     dialog.show()
     result = app.exec_()

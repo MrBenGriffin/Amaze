@@ -5,10 +5,10 @@ class Config:
 
     def __init__(self, tk_root, action_on_submit):
 
-        self.maze_width = 16
+        self.maze_width = 60
         self.maze_height = 16
-        self.maze_levels = 1
-        self.cell_size = 60
+        self.maze_levels = 2
+        self.cell_size = 40
 
         self.action_on_submit = action_on_submit
         self._root = tk_root

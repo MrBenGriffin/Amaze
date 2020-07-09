@@ -1,4 +1,5 @@
 # encoding: utf-8
+from random import shuffle
 from tkinter import HIDDEN
 from Maze.cell import Cell
 from Maze.util import Dim, Com, Orientation
@@ -21,7 +22,7 @@ class Concrete:
 class Corner:
     def __init__(self, wall_dict):
         self.concrete = None
-        self.walls = wall_dict   # N,E,S,W
+        self.walls = wall_dict  # N,E,S,W
 
     def __str__(self):
         value = Com.X
@@ -120,10 +121,26 @@ class Floor:
     the Com.C is the cell that sees this as a ceiling.
     the Com.F is the cell that sees this as a floor.
     """
+    id = ['💙', '🌔', '️🐿', '🕷', '🎹️', '🐴', '🌀', '🥨', '🐖', '🐣', '📗', '🐏', '🌲', '🐤', '⛏',
+          '🤩', '😂', '🦄', '️💌', '🦑', '🌱️', '🥑', '️🛷', '😴', '🥄', '️🌈', '💣', '🦁', '😱', '🌒',
+          '🐔', '👣', '🍉️', '💟', '🌕', '🔥', '😜', '🐱', '🦊', '️🚚', '🟫', '🌖️', '🔴', '🥳', '💣️',
+          '🔵', '💧', '😘', '🍎', '😈', '🟠', '😃', '🦅', '🌜', '🐼', '🦢', '🧵', '🐬', '🐰', '🌑',
+          '🌏', '🏡', '🌎', '🦆', '🐗', '🦞', '🎃', '🪐', '🦉', '🧩', '🐝', '️🤖', '🌚', '😸', '🍄',
+          '🍇️', '🟤', '💥', '💛', '📕', '📒', '😍', '🐵', '🐺', '️👓', '🦇', '⚙️', '💩', '🌴', '🐮',
+          '🙂', '️🎉', '✈️', '🤓', '🐠', '🌙', '👻', '🍪', '👁', '🥺', '🐷', '🌝', '🍕️', '🟢', '📘',
+          '🐪', '🍩', '🦴', '️🎸', '🦔', '⏱', '✳️', '🐭', '⛄️', '🐨', '🧲', '🤣', '️🐫', '🤪', '🧡',
+          '🔶️', '🐦', '⚓️', '📙', '😎', '😞', '⛳️', '💈️', '🌛', '🐳', '🐉', '🛠', '🌘', '😇', '🥶️',
+          '🕸', '️👹', '💰', '🔔', '💜', '🐧', '🔷', '️🕰', '😭', '🐸', '️📎', '🌓', '🏆️', '🚗', '️😍',
+          '🐯', '💚', '🌞', '🌗', '🐻', '🐹', '🎡', '🐙', '🥰', '🌍️', '🍪️', '🏹', '🎲', '🛴', '🏖']
+
+    # ids = len(id)
+    shuffle(id)
+    _id_ptr = 0
 
     def __init__(self, floor, ceiling):
         self.cells = {Com.C: ceiling, Com.F: floor}
         self.solid = True
+        self.id = None
         self.tk_c = self.tk_f = None
         if ceiling:
             ceiling.floors[Com.C] = self
@@ -134,30 +151,31 @@ class Floor:
         self.q = Dim(b[2] - 4, b[1] + 4, 0)
 
     def make_hole(self, com):
-        self.solid = False
-        this = self.cells[com]
         other = self.cells[com.opposite]
-        if this:
-            self.tk_paint(this)
-        if other:
-            self.tk_paint(other)
+        if self.solid and other.floors[com.opposite].solid:
+            self.solid = False
+            self._set_id()
+            self._shape()
         return other
 
-    def tk_paint(self, cell):
+    def _set_id(self):
+        self.id = Floor.id[Floor._id_ptr]
+        Floor._id_ptr += 1
+
+    def _tkbit(self, cell):
+        if cell.level.tk_level:
+            ox = cell.dim.x * cell.size + cell.level.maze.offset
+            oy = cell.dim.y * cell.size + cell.level.maze.offset
+            text_offset = cell.size - cell.size * 0.8
+            text_scale = int(cell.size * 0.8)
+            text_delta = int(cell.size * 0.25)
+            cell.level.tk_level.create_text(
+                ox + text_offset + text_delta,
+                oy + text_offset + text_delta,
+                font=("*", text_scale), text=f"  {self.id}")
+
+    def _shape(self):
         if self.solid:
             return
-        if cell == self.cells[Com.C]:
-            if cell.level.tk_level:
-                self.tk_c = cell.level.tk_level.create_line(
-                    (
-                        self.p.x, self.p.y, self.q.x, self.p.y, self.q.x, self.q.y, self.p.x,
-                        self.p.y),
-                    width=2, fill='red')
-        elif cell == self.cells[Com.F]:
-            if cell.level.tk_level:
-                self.tk_f = cell.level.tk_level.create_line(
-                    (
-                        self.p.x, self.p.y, self.p.x, self.q.y, self.q.x, self.p.y, self.p.x,
-                        self.p.y),
-                    width=2, fill='blue')
-
+        for k in self.cells:
+            self._tkbit(self.cells[k])

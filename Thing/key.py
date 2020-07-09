@@ -1,23 +1,26 @@
-from tkinter import HIDDEN
+# from tkinter import HIDDEN
 from Thing.item import Item
-from Maze.cell import Cell
+# from Maze.cell import Cell
 
 # So a key can be picked up, dropped off, or exchanged.
 # But this isn't a key in that sense!  It's a key generator.
+# Maybe we should allow two-way key exchange A<-->B
+# it would be easier (no need for rev. key)
 
 class Key(Item):
 
     identity = 0
 
-    def __init__(self, gate_cell, exchange=(), key_name=None):
+    def __init__(self, gate_cell, key_to_exchange=None, key_name=None):
         super().__init__()
         self.name = key_name if key_name else self.get_identity()
+        self.exch = key_to_exchange
         self.gate_cell = gate_cell
-        self.requires_exchange = len(exchange) != 0
-        self.exchange = set(exchange)    # set of key(s) to exchange
+        self.requires_exchange = key_to_exchange is not None
+        self.exchange = {self.exch} if self.exch else {}
 
-    def tk_init(self, maze, cell, size=0.5):
-        super().tk_init(maze, cell, size)
+    def tk_init(self, size=0.5):
+        super().tk_init(size)
 
     def select(self, keychain):
         if self.requires_exchange:
@@ -32,19 +35,15 @@ class Key(Item):
         fill_colour = "yellow"
 
         # This shows A/B
-        # if self.requires_exchange:
-        if True:
+        if self.requires_exchange:
             exch = '*'
-            if len(self.exchange) == 1:
-                for exch in self.exchange:
-                    break
             text_scale = int(self.size * 0.5)
             text_offset = self.size - self.size * 0.8 * 0.66
             text_delta = int(self.size * 0.2)
             return [
                 canvas.create_rectangle(0, 0, self.size, self.size, width=2, outline="green", fill=fill_colour),
-                canvas.create_text(text_offset+text_delta, text_offset+text_delta, font=("Helvetica", text_scale, 'bold'), text=self.name),
-                canvas.create_text(text_offset-text_delta, text_offset-text_delta, font=("Helvetica", text_scale), text=exch)
+                canvas.create_text(text_offset+text_delta, text_offset+text_delta, font=("Helvetica", text_scale), text=self.name),
+                canvas.create_text(text_offset-text_delta, text_offset-text_delta, font=("Helvetica", text_scale), text=self.exch)
             ]
         else:
             text_scale = int(self.size * 0.8)

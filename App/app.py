@@ -59,21 +59,23 @@ class App(object):
         far_cells = cell_distances[furthest]  # list of furthest cells
         self.goal_cell = the_maze.at(choice(far_cells))
 
-        # Make 20 gates
+        # Make gates and decoy gates
         gate_maker = Gatemaker(the_maze, worm)
-        gate_maker.make(3, start_cell, self.goal_cell)
+        gate_maker.make(start_cell, self.goal_cell)
 
         self.gamer = Gamer(the_maze)
         # self.robot = Robot(the_maze)
         self.gamer.go(the_maze.at(Maze.start))
         # self.robot.go(the_maze.at(Maze.start))
         self.gamer.goal = self.goal_cell
-        # self.robot.goal = self.goal_cell
+        # self.robot.goal = self.b
         the_maze.add_thing(self.goal_cell, Goal(the_maze))
         the_maze.add_bod(self.gamer)
         # the_maze.add_bod(self.robot)
+        the_maze.tk_init_things()
         the_maze.tk_init_bods(bods_window)
         the_maze.tk_paint()
+
 
     @staticmethod
     def run():

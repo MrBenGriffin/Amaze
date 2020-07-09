@@ -17,6 +17,13 @@ class Inchworm(Mover):
         self.track.clear()
         self.stops = []
 
+    def find_ends(self, start):
+        self._reset()
+        self.go(start)
+        while self.track:
+            self._traverse()
+        return self.dead_ends
+
     def make_track(self, start, finish):
         self._reset()
         self.go(start)
@@ -61,20 +68,6 @@ class Inchworm(Mover):
                     distances[k] = non_adjacent
                 else:
                     del distances[k]
-
-
-        # for key in range(number):
-        #     for distance in heavy_first:
-        #         cell_list = a_b[distance]
-        #         for cell_index in cell_list:
-        #             if cell_index not in self.master_track:
-        #                 contender = self.maze.at(cell_index)
-        #                 if not contender.gate and not contender.key:
-        #                     key_to_gate = worm.make_track(contender, stops[-1])
-        #                     if len(key_to_gate) > self.min_key_gate_distance:
-        #                         result.append(contender)
-        # return result
-
 
     def _traverse(self):
         this_cell = self.track[-1]

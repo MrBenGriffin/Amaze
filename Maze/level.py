@@ -3,8 +3,9 @@ from Maze.wall import Wall, Floor, Corner
 from Maze.cell import Cell
 
 class Level:
-    def __init__(self, cells_across, cells_up, cell_size, level):
+    def __init__(self, maze, cells_across, cells_up, cell_size, level):
         Cell.size = cell_size
+        self.maze = maze
         self.level = level
         self.tk_level = None
         self.cells_across = cells_across
@@ -33,7 +34,9 @@ class Level:
             for i in range(self.cells_across+1)]
 
     def erode(self):
-        pass
+        for j in range(self.cells_up):
+            for i in range(self.cells_across):
+                self.cells[i][j].calc_values()
         # for wall in self.ns_walls:
         #     wall.erode()
         # for wall in self.ew_walls:
@@ -66,9 +69,9 @@ class Level:
         for i in range(len(self.ew_walls)):
             for j in range(len(self.ew_walls[i])):
                 self.ew_walls[i][j].tk_paint()
-        for i in range(len(self.cells)):
-            for j in range(len(self.cells[i])):
-                self.floors[i][j].tk_paint(self.cells[i][j])
+        # for i in range(len(self.cells)):
+        #     for j in range(len(self.cells[i])):
+        #         self.floors[i][j].tk_paint(self.cells[i][j])
 
     def string(self):  # __str__ method here is just for easy visualisation purposes.
         line = "Level %s\n" % (1 + self.level)

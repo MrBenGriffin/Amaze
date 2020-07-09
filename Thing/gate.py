@@ -9,16 +9,16 @@ from Thing.item import Item
 
 class Gate(Item):
 
-    def __init__(self, bi_directional, key):
+    def __init__(self, key=None, bi_directional=True):
         super().__init__()
-        self.unlocked_with = key.name
-        # self.bi_directional = bi_directional
+        self.unlocked_with = key.name if key else None
+        self.bi_directional = bi_directional
 
-    def tk_init(self, maze, cell, size=0.8):
-        super().tk_init(maze, cell, size)
+    def tk_init(self, size=0.8):
+        super().tk_init(size)
 
     def shape(self, canvas):
-        outline_colour = "white"  # if self.bi_directional else "red"
+        outline_colour = "white" if self.bi_directional else "red"
         text_scale = int(self.size * 0.8)
         text_offset = self.size - text_scale * 0.66
         return [

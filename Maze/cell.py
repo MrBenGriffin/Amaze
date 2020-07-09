@@ -13,6 +13,8 @@ class Cell:
         self.gate = None  # No rune on initialisation.
         self.rune = None  # No rune on initialisation.
         self.dim = dim
+        self.exit_count = 0
+
         self.level = level
         self.mined = False
         self.floors = {Com.C: None, Com.F: None}
@@ -28,6 +30,10 @@ class Cell:
 
     def name(self):
         return str(self.dim)
+
+    def calc_values(self):
+        pass
+        # self.exit_count = len(self.exits())
 
     def move(self, com, key_list):
         if com in self.floors and self.floors[com] and not self.floors[com].solid:
@@ -126,7 +132,6 @@ class Cell:
             cell = self.floors[com].make_hole(com)
             if cell:
                 Cell.last = com
-                self.floors[com].tk_paint(com)
                 cell.stairs_coming_in(com.opposite)
         else:
             cell = self.walls[com].make_door(com, kind)
@@ -136,7 +141,6 @@ class Cell:
 
     def stairs_coming_in(self, com):
         self.mined = True
-        self.floors[com].tk_paint(com)
         walls = self.level_exits()
         random.shuffle(walls)
         while walls and len(walls) > 1:

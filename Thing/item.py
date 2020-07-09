@@ -18,16 +18,13 @@ class Item(object):
         self.active = True
         self.id = []
 
-    # Default method.
     def shape(self, canvas):
         return [canvas.create_rectangle(0, 0, self.size, self.size, outline="white", fill="red")]
 
-    def tk_init(self, maze, cell, size=0.70):
-        self.maze = maze
-        self.size = maze.cell_size * size
-        self.cell = cell
-        self.offset = (maze.cell_size - self.size) // 2
-        self.canvas = cell.level.tk_level
+    def tk_init(self, size=0.70):
+        self.size = self.maze.cell_size * size
+        self.offset = (self.maze.cell_size - self.size) // 2
+        self.canvas = self.cell.level.tk_level
         self.id = self.shape(self.canvas)
         self.tk_move()
 

@@ -6,11 +6,15 @@ class Goal(Item):
         super().__init__()
         self.cell = cell
 
-    def tk_init(self, maze, cell, size=0.75):
-        super().tk_init(maze, cell, size)
+    def tk_init(self, size=1.0):
+        super().tk_init(size)
 
     def shape(self, canvas):
-        fill_colour = "green"
+        fill_colour = "#AAA"
+        text_offset = self.cell.size - self.cell.size * 0.70
+        text_scale = int(self.cell.size * 0.33)
+
         return [
-            canvas.create_rectangle(0, 0, self.size, self.size, width=2, outline="yellow", fill=fill_colour)
+            canvas.create_rectangle(0, 0, self.size, self.size, width=0, fill=fill_colour),
+            canvas.create_text(text_offset, text_offset, font=("Monaco", text_scale, 'bold'), text='  Exit', fill='white')
         ]

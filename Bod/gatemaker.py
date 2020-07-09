@@ -3,6 +3,7 @@ from math import sqrt
 from random import choice, randint
 
 from Bod.mover import Mover
+from Thing.blob import Blob
 from Thing.gate import Gate
 from Thing.key import Key
 
@@ -39,8 +40,46 @@ class Gatemaker(Mover):
     def _run(self):
         pass
 
-    # let's try a recursive make.. (so it's.. make one good and one decoy between [in] and [out]
-    def make(self, gate_count, start_cell, goal_cell):
+    # Key(self, gate_cell, exchange=(), key_name=None):
+    def make(self, entrance, terminal):
+        path = self.worm.make_track(entrance, terminal).copy()
+        off_routes = self._find_far(path, [], 6)
+        off_gates = []
+        false_goals = []
+        for far in off_routes:
+            off_gates.append(far[0])
+            false_goals.append(far[-1])
+
+        for gx in off_gates:
+            self.maze.add_thing(gx, Blob("green", 0.3))
+
+        for gx in false_goals:
+            self.maze.add_thing(gx, Blob("yellow", 0.25))
+
+        markers = self._chunk(entrance, terminal, 12)
+        for x in markers:
+            self.maze.add_thing(x[0], Blob("red", 0.3))
+        # pass
+
+    def _dead_ends(self, start):
+        dis = self.worm.distances(start)
+        self.worm.cull(dis)
+        return [self.maze.at(d) for k in dis for d in dis[k]]
+
+    def _chunk(self, a, b, too_low):
+        path = self.worm.make_track(a, b).copy()  # 'path' = path from start to goal. self
+        jns = [i for i, x in enumerate(path[1:-1]) if x.exit_count > 2]
+        if jns and len(jns) > 2:
+            g = jns[len(jns) // 2] + 2
+            if g > too_low and path[g].exit_count < 3:  # This would be the normal recursion check.
+                return [[path[g], path[1], path[3]]] \
+                       + self._chunk(a, path[g], too_low) \
+                       + self._chunk(path[g], b, too_low)
+        return []
+
+    # (make one good and some decoys between [in] and [out])
+    # This ... sort-of works...
+    def make_x(self, start_cell, goal_cell, gate_count=3):
         # we want to make a real gate between start and goal, and then some decoys also..
         # the real gate needs to be on the start=>goal path
         # the decoys need to be OFF the start=>goal path
@@ -94,7 +133,7 @@ class Gatemaker(Mover):
                 if not key_cell:
                     key_cell = gate_track[int(gate_point * 2/3)]
             self._make_key(key_cell, main_gate, key_exchange.copy())
-            self.make(gate_count - 1, main_gate, goal_cell)
+            self.make(main_gate, goal_cell, gate_count - 1)
             if start_cell.gate:
                 self._make_key(rev_key, start_cell, {}, start_cell.gate.unlocked_with)
             for decoy in decoys:
@@ -105,23 +144,9 @@ class Gatemaker(Mover):
                         ok = False
                         break
                 if ok:
-                    decoy[0].gate = Gate(True, key_cell.key)
+                    decoy[0].gate = Gate(key_cell.key)
                     self.maze.add_thing(decoy[0], decoy[0].gate)
-                    self.make(gate_count - 1, decoy[0], decoy[1])
-
-            #branch_paths = self._find_far(master, blocks, 6)
-            # if len(branch_paths) >= 2:
-            #     key_cell = branch_paths.pop(0)[-1]
-            #     self._make_key(key_cell, main_gate, key_exchange.copy())
-            #     if start_cell.gate:
-            #         rev_key = branch_paths.pop(0)[-1]
-            #         self._make_key(rev_key, start_cell, {key_cell.key.name}, start_cell.gate.unlocked_with)
-            #     decoy_paths = branch_paths[:randint(2, 5)]
-            #     self.make(gate_count - 1, main_gate, goal_cell)
-            #     for decoy in decoy_paths:
-            #         decoy[0].gate = Gate(True, key_cell.key)
-            #         self.maze.add_thing(decoy[0], decoy[0].gate)
-            #         self.make(gate_count - 1, decoy[0], decoy[-1])
+                    self.make(decoy[0], decoy[1],gate_count - 1)
 
     def _find_far(self, path, stops, too_short):
         if not path:
@@ -137,98 +162,97 @@ class Gatemaker(Mover):
         return result
 
 # given a list of cells, order them (and their midpoint from start) that are farthest away from both start and goal.
-    def _sel_far(self, candidates, ends, stops):
-        result = {}
-        for candidate in candidates:
-            c_cell = self.maze.at(candidate)
-            a_track = self.worm.make_track(ends[0], c_cell)
-            a = len(a_track)
-            gate_point = a // 2
-            gate = a_track[gate_point]
-            while gate in stops and gate_point + 12 < a:
-                gate_point += 1
-                gate = a_track[gate_point]
-            b = len(self.worm.make_track(c_cell, ends[1]))
-            score = sqrt(a*a + b*b)
-            result[score] = [c_cell, gate]
-        stuff = [result[x] for x in sorted(result.keys(), reverse=True)]
-        return stuff
+#     def _sel_far(self, candidates, ends, stops):
+#         result = {}
+#         for candidate in candidates:
+#             c_cell = self.maze.at(candidate)
+#             a_track = self.worm.make_track(ends[0], c_cell)
+#             a = len(a_track)
+#             gate_point = a // 2
+#             gate = a_track[gate_point]
+#             while gate in stops and gate_point + 12 < a:
+#                 gate_point += 1
+#                 gate = a_track[gate_point]
+#             b = len(self.worm.make_track(c_cell, ends[1]))
+#             score = sqrt(a*a + b*b)
+#             result[score] = [c_cell, gate]
+#         stuff = [result[x] for x in sorted(result.keys(), reverse=True)]
+#         return stuff
 
     # This is a linear make..
-    def old_make(self, gate_count, worm, start_cell, goal_cell):
-        master_track = worm.make_track(start_cell, goal_cell).copy()
-        track_length = len(master_track)
-        key_exchange = tuple()
-        self.gate_distance = max(1, track_length // gate_count)
-        self.min_key_gate_distance = max(1, self.gate_distance // 3)
-        leg_in = 0
-        leg_out = self.gate_distance
-        while leg_out < len(master_track) - 1:
-            leg_a = master_track[leg_in]
-            leg_b = master_track[leg_out]
-            leg_start = master_track[leg_in + 1]
-            # key_1 = self._choose_key_cell(worm, leg_start, [leg_a, leg_b])
-            # we want two keys between leg_a and leg_b
-            # they A[.. (b->a) .. (a->b) ..]B
-            # gen.  [ .. R .. F .. ] (reverse/forward)
-            keys = self._choose_cells(master_track, worm, leg_start, [leg_a, leg_b], 2)
-            if keys:
-                key_exchange = self._make_key(keys.pop(), leg_b, key_exchange)
-                if leg_a.gate:
-                    if keys:
-                        self._make_key(keys.pop(), leg_a, key_exchange, leg_a.gate.unlocked_with)
-                    else:
-                        pass
+    # def old_make(self, gate_count, worm, a, b):
+    #     master_track = worm.make_track(a, b).copy()
+    #     track_length = len(master_track)
+    #     key_exchange = tuple()
+    #     self.gate_distance = max(1, track_length // gate_count)
+    #     self.min_key_gate_distance = max(1, self.gate_distance // 3)
+    #     leg_in = 0
+    #     leg_out = self.gate_distance
+    #     while leg_out < len(master_track) - 1:
+    #         leg_a = master_track[leg_in]
+    #         leg_b = master_track[leg_out]
+    #         leg_start = master_track[leg_in + 1]
+    #         # key_1 = self._choose_key_cell(worm, leg_start, [leg_a, leg_b])
+    #         # we want two keys between leg_a and leg_b
+    #         # they A[.. (b->a) .. (a->b) ..]B
+    #         # gen.  [ .. R .. F .. ] (reverse/forward)
+    #         keys = self._choose_cells(master_track, worm, leg_start, [leg_a, leg_b], 2)
+    #         if keys:
+    #             key_exchange = self._make_key(keys.pop(), leg_b, key_exchange)
+    #             if leg_a.gate:
+    #                 if keys:
+    #                     self._make_key(keys.pop(), leg_a, key_exchange, leg_a.gate.unlocked_with)
+    #                 else:
+    #                     pass
+    #
+    #         leg_in = leg_out
+    #         leg_out += self.gate_distance
 
-            leg_in = leg_out
-            leg_out += self.gate_distance
+    # def _choose(self, path, goal, stops, number, allow_on_path=False, choosing_gates=False, max_length=None):
+    #     result = set()
+    #     if path:
+    #         a_b = self.worm.distances(path[1], stops, max_length)
+    #         self.worm.cull(a_b)  # removes adjacent cells.
+    #         heavies = sorted(a_b.keys(), reverse=True)
+    #         for distance in heavies:
+    #             cell_list = a_b[distance]
+    #             for cell_index in cell_list:
+    #                 contender = self.maze.at(cell_index)
+    #                 if allow_on_path or contender not in path:
+    #                     if not contender.gate and not contender.key:
+    #                         key_path = self.worm.make_track(contender, goal)
+    #                         path_len = len(key_path)
+    #                         if path_len > self.min_key_gate_distance:
+    #                             if choosing_gates:
+    #                                 result.add(key_path[path_len // 2])
+    #                             else:
+    #                                 result.add(contender)
+    #             if len(result) >= number:
+    #                 break
+    #     return result
 
-    def _choose(self, path, goal, stops, number, allow_on_path=False, choosing_gates=False, max_length=None):
-        result = set()
-        if path:
-            a_b = self.worm.distances(path[1], stops, max_length)
-            self.worm.cull(a_b)  # removes adjacent cells.
-            heavies = sorted(a_b.keys(), reverse=True)
-            for distance in heavies:
-                cell_list = a_b[distance]
-                for cell_index in cell_list:
-                    contender = self.maze.at(cell_index)
-                    if allow_on_path or contender not in path:
-                        if not contender.gate and not contender.key:
-                            key_path = self.worm.make_track(contender, goal)
-                            path_len = len(key_path)
-                            if path_len > self.min_key_gate_distance:
-                                if choosing_gates:
-                                    result.add(key_path[path_len // 2])
-                                else:
-                                    result.add(contender)
-                if len(result) >= number:
-                    break
-        return result
-
-    def _choose_cells(self, master, worm, start, stops, number, include_path=False):
-        result = set()
-        a_b = worm.distances(start, stops)
-        worm.cull(a_b)  # removes adjacent cells.
-        heavies = sorted(a_b.keys(), reverse=True)
-        for distance in heavies:
-            cell_list = a_b[distance]
-            for cell_index in cell_list:
-                contender = self.maze.at(cell_index)
-                if include_path or contender not in master:
-                    if not contender.gate and not contender.key:
-                        key_to_gate = worm.make_track(contender, stops[-1])
-                        if len(key_to_gate) > self.min_key_gate_distance:
-                            result.add(contender)
-            if len(result) >= number:
-                break
-        return result
+    # def _choose_cells(self, master, worm, start, stops, number, include_path=False):
+    #     result = set()
+    #     a_b = worm.distances(start, stops)
+    #     worm.cull(a_b)  # removes adjacent cells.
+    #     heavies = sorted(a_b.keys(), reverse=True)
+    #     for distance in heavies:
+    #         cell_list = a_b[distance]
+    #         for cell_index in cell_list:
+    #             contender = self.maze.at(cell_index)
+    #             if include_path or contender not in master:
+    #                 if not contender.gate and not contender.key:
+    #                     key_to_gate = worm.make_track(contender, stops[-1])
+    #                     if len(key_to_gate) > self.min_key_gate_distance:
+    #                         result.add(contender)
+    #         if len(result) >= number:
+    #             break
+    #     return result
 
     def _make_key(self, key_cell, gate_cell, exchange=(), name=None):
         key_cell.key = Key(gate_cell, exchange, name)
         self.maze.add_thing(key_cell, key_cell.key)
-        key_cell.key.tk_init(self.maze, key_cell)
         if not gate_cell.gate:
-            gate_cell.gate = Gate(True, key_cell.key)
+            gate_cell.gate = Gate(key_cell.key)
             self.maze.add_thing(gate_cell, gate_cell.gate)
         return tuple(key_cell.key.name)

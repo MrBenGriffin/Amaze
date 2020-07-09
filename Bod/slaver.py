@@ -27,8 +27,6 @@ class Slaver(Mover):
                 if walls_to_dig:
                     the_wall = self.do_mine(walls_to_dig, this_cell)
                 else:
-                    # if this_cell.is_a_passage() and self.forward > 4:
-                    #     Gate.make(self.maze, this_cell)
                     self.forward = 0
                     self.track.pop()
             else:
@@ -45,8 +43,6 @@ class Slaver(Mover):
         the_wall = random.choice(walls_to_dig)
         next_cell = this_cell.make_door_in(the_wall)
         if next_cell:
-            # if this_cell.is_a_passage() and self.forward > 4:
-            #     Gate.make(self.maze, this_cell)
             self.track.append(next_cell)
             self.forward += 1
         else:

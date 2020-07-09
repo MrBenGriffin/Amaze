@@ -57,3 +57,4 @@ class Gamer(Mover):
 
     def _run(self):
         self.move(self.moving)
+        self.moving = None

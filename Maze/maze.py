@@ -2,6 +2,10 @@
 from tkinter import Canvas, Label, StringVar
 from Maze.level import Level
 from Maze.cell import Cell
+from random import shuffle
+
+from Maze.wall import Floor
+
 
 class Maze:
     """
@@ -14,7 +18,6 @@ class Maze:
     start = (0, 0, 0)
 
     def __init__(self, cells_across, cells_up, depth, cell_size):
-        self.gates = 0
         self.cells_across = cells_across
         self.cells_up = cells_up
         self.depth = depth
@@ -28,9 +31,9 @@ class Maze:
         self.bod_icons = []
         self.things = []
         self.levels = []
-        # print("Making maze:", cells_across, cells_up, depth)
+        shuffle(Floor.id)
         for level in range(self.depth):
-            floor = Level(cells_across, cells_up, cell_size, level)
+            floor = Level(self, cells_across, cells_up, cell_size, level)
             self.levels.append(floor)
         for level in self.levels:
             level.set_floor(self)
@@ -52,11 +55,9 @@ class Maze:
 
     def add_thing(self, cell: object, thing: object):
         if self.tk_maze:
-            from Thing.gate import Gate
-            if isinstance(thing, Gate):
-                self.gates += 1
+            thing.maze = self
+            thing.cell = cell
             self.things.append(thing)
-            thing.tk_init(self, cell)
 
     def add_bod(self, bod):
         self.bods.append(bod)
@@ -78,7 +79,7 @@ class Maze:
             level.tk_level = Canvas(self.tk_maze,
                                     width=self.space + Cell.size * (self.cells_across + 0),
                                     height=self.space + Cell.size * (self.cells_up + 0),
-                                    bg='gray')
+                                    bg='white')
             level.tk_level.grid(columns=1, rows=1)
         self.tk_maze.after(0, self.animation)
 
@@ -97,6 +98,10 @@ class Maze:
             bod.tk_status = [icon, key_text, key_label, key_list]
             row_id += 1
         self.tk_status.after(0, self.status_update)
+
+    def tk_init_things(self):
+        for thing in self.things:
+            thing.tk_init()
 
     def animation(self):
         for bod in self.bods:

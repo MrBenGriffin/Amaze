@@ -1,27 +1,44 @@
+from itertools import product
 from math import floor, ceil
-
+from random import choices
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QPen, QPainterPath, QPainter, QTransform
 from PyQt5.QtWidgets import QGraphicsScene
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, QPointF, QRectF
 
 
 class Wall:
     def __init__(self):
         pass
 
+
 class Maze:
+    normal = 100
+    w_off = 2
+
+    def _poly(self, edges):
+        len = Maze.normal - Maze.w_off / 2
+        pt = [QPointF(0, len), QPointF(len, len), QPointF(len, 0), QPointF(0, 0)]
+        path = QPainterPath()
+        path.moveTo(0, 0)
+        for i in range(4):
+            path.lineTo(pt[i]) if edges[i] else path.moveTo(pt[i])
+        return path
+
     def __init__(self):
         self.x = 1
         self.y = 1
         self.z = 1
         self.cells = {}
         self.scenes = []
+        self.polygons = {x: self._poly(x) for x in product((False, True), repeat=4)}
 
     def reset(self, x, y, z):
         self.x = x
         self.y = y
         self.z = z
-        self.cells = {tuple((ix, iy, iz)): (True, True, True, True, True, True)  # N S E W C F
+
+        self.cells = {tuple((ix, iy, iz)): tuple(choices([True, False], k=4))  # N S E W | C F
                       for ix in range(self.x)
                       for iy in range(self.y)
                       for iz in range(self.z)
@@ -29,22 +46,13 @@ class Maze:
         for scene in self.scenes:
             scene.clear()
 
-    def draw(self, offset, scale):
-        len = scale
+    def draw(self, scene_offset, scale):
+        pen = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
         for x, y, z in self.cells:
-            cx1 = offset + x * scale
-            cy1 = offset + y * scale
-            cx2 = cx1 + len
-            cy2 = cy1 + len
-            walls = self.cells[x, y, z]
-            if walls[0]:
-                self.scenes[z].addLine(cx1, cy1, cx2, cy1)
-            if walls[1]:
-                self.scenes[z].addLine(cx2, cy1, cx2, cy2)
-            if walls[2]:
-                self.scenes[z].addLine(cx1, cy2, cx2, cy2)
-            if walls[3]:
-                self.scenes[z].addLine(cx1, cy1, cx1, cy2)
+            cx1 = scene_offset + self.w_off + x * Maze.normal
+            cy1 = scene_offset + self.w_off + y * Maze.normal
+            shape = self.polygons[self.cells[x, y, z]]
+            self.scenes[z].addPath(shape.translated(QPointF(cx1, cy1)), pen)
 
 class MyDialog(QtWidgets.QDialog):
 
@@ -55,16 +63,16 @@ class MyDialog(QtWidgets.QDialog):
         self.demi = self.offset // 2
         self.tmp_idx = 0
         self.levels = 4
-        self.width = 6
-        self.height = 7
-        self.cell_size = 48
+        self.width = 3
+        self.height = 3
+        self.cell_size = 100
         self.maze = None
         self.level_tabs = []
         self.level_gx = []
         self.tab_widget = None
         super().__init__()
 
-    def reset_tab(self):
+    def reset_tab_widget(self):
         self.tmp_idx = 0
         prev_widget = self.tab_widget
         self.tab_widget = QtWidgets.QTabWidget(self)
@@ -75,7 +83,7 @@ class MyDialog(QtWidgets.QDialog):
             prev_widget.close()
         else:
             self.horizontal_layout.addWidget(self.tab_widget)
-        self.tab_widget.setMinimumSize(QtCore.QSize(310, 380))
+        self.tab_widget.setMinimumSize(QtCore.QSize(360, 380))
         self.tab_widget.setTabPosition(QtWidgets.QTabWidget.North)
         self.tab_widget.setObjectName("tab_widget")
         if self.maze:
@@ -87,8 +95,8 @@ class MyDialog(QtWidgets.QDialog):
             self.level_gx = []
             self.maze.scenes = []
 
-    def draw_maze(self, geometry):
-        self.reset_tab()
+    def set_tab_widget(self, tab_widget_dim):
+        self.reset_tab_widget()  # initialises / replaces a QTabWidget into the horizontal_layout
         for level in range(self.levels):
             tab = QtWidgets.QWidget()
             tab.setObjectName(f"T{level}")
@@ -96,18 +104,18 @@ class MyDialog(QtWidgets.QDialog):
             self.level_tabs.append(tab)
             scene = QGraphicsScene()
             self.maze.scenes.append(scene)
-            tab.resize(geometry.width(), geometry.height())
+            tab.resize(tab_widget_dim.width(), tab_widget_dim.height())
             gv = QtWidgets.QGraphicsView(scene, tab)
             gv.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
             gv.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            gv.setMinimumSize(QtCore.QSize(290, 340))
+            gv.setMinimumSize(QtCore.QSize(340, 340))
             gv.setObjectName(f"L{level}")
-            self.adjust_gx(gv, scene, geometry)
             self.level_gx.append(gv)
+            self.adjust_gx(gv, scene, tab_widget_dim)
         self.maze.reset(self.width, self.height, self.levels)
         self.maze.draw(self.demi, self.cell_size)
         for idx in range(self.levels):
-            self.adjust_gx(self.level_gx[idx], self.maze.scenes[idx], geometry)
+            self.adjust_gx(self.level_gx[idx], self.maze.scenes[idx], tab_widget_dim)
         self.tab_widget.setCurrentIndex(self.tmp_idx % self.levels)
 
     def depth_change(self):
@@ -119,7 +127,7 @@ class MyDialog(QtWidgets.QDialog):
 
     def level_resize(self):
         self.tab_widget.hide()
-        if self.level_tabs:
+        if self.level_tabs:  # These should exist..
             idx = self.tab_widget.currentIndex()
             dt = QRect(self.level_tabs[idx].frameGeometry())
             self.cell_size = self.form.fields['Size'].value()
@@ -127,21 +135,17 @@ class MyDialog(QtWidgets.QDialog):
             self.height = ceil((dt.height() - self.offset) // self.cell_size)
             self.form.fields['Width'].setText(f"{self.width}")
             self.form.fields['Height'].setText(f"{self.height}")
-            self.draw_maze(dt)
+            self.set_tab_widget(dt)
         self.tab_widget.show()
         self.update()
-
 
     def adjust_gx(self, gx, scene, frame):
         # this frame is the tab container.
         gx.resize(int(frame.width()), int(frame.height()))
-        # gx.mapFromScene(scene.sceneRect())
-        # don't seem to need the following
-        gr = gx.frameGeometry()
-        sr = scene.sceneRect()
-        cp = gr.center()
-        sr.moveCenter(cp)
-        scene.setSceneRect(sr)
+        sx = self.width * Maze.normal + Maze.w_off
+        sy = self.height * Maze.normal + Maze.w_off
+        gx.fitInView(0, 0, sx, sy)
+        scene.setSceneRect(QRectF())
 
     def resizeEvent(self, event):
         self.level_resize()
@@ -158,10 +162,8 @@ class MyDialog(QtWidgets.QDialog):
         self.setSizePolicy(size_policy)
         self.horizontal_layout = QtWidgets.QHBoxLayout(self)
         self.horizontal_layout.setObjectName("horizontal_layout")
-
-        dt = QRect(0, 0, 304, 351)
-        self.draw_maze(dt)
-
+        tab_widget_dim = QRect(0, 0, 360, 360)  # This is the size of the initial tab_widget
+        self.set_tab_widget(tab_widget_dim)
         self.form.widget = QtWidgets.QWidget(self)
         self.form.configure()
         self.horizontal_layout.addWidget(self.form.widget)

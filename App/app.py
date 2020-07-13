@@ -11,6 +11,7 @@ from Bod.gamer import Gamer
 from Bod.robot import Robot
 from App.config import Config
 from Thing.goal import Goal
+from Thing.start import Start
 
 
 class App(object):
@@ -18,6 +19,7 @@ class App(object):
         self.miner = None
         self.gamer = None
         self.robot = None
+        self.start_cell = None
         self.goal_cell = None
         self.root = tk_root
         self.maze_windows = []
@@ -52,26 +54,34 @@ class App(object):
         the_maze.remove_bod(self.miner)
 
         # Choose start and goal.
-        start_cell = the_maze.cell(0, 0, 0)
+        self.start_cell = the_maze.cell(0, 0, 0)
+
         worm = Inchworm(the_maze)
-        cell_distances = worm.distances(start_cell)
+        cell_distances = worm.distances(self.start_cell)
         furthest = len(cell_distances) - 1    # first is zero, and others go up from there...
         far_cells = cell_distances[furthest]  # list of furthest cells
+
+        # Make start and goal
+        the_maze.add_thing(self.start_cell, Start(the_maze))
         self.goal_cell = the_maze.at(choice(far_cells))
+        the_maze.add_thing(self.goal_cell, Goal(the_maze))
 
         # Make gates and decoy gates
-        gate_maker = Gatemaker(the_maze, worm)
-        gate_maker.make(start_cell, self.goal_cell)
+        # gate_maker = Gatemaker(the_maze, worm)
+        # gate_maker.make(start_cell, self.goal_cell)
 
-        self.gamer = Gamer(the_maze)
+        # Make robot
         # self.robot = Robot(the_maze)
-        self.gamer.go(the_maze.at(Maze.start))
         # self.robot.go(the_maze.at(Maze.start))
-        self.gamer.goal = self.goal_cell
         # self.robot.goal = self.b
-        the_maze.add_thing(self.goal_cell, Goal(the_maze))
-        the_maze.add_bod(self.gamer)
         # the_maze.add_bod(self.robot)
+
+        # Make Gamer
+        # self.gamer = Gamer(the_maze)
+        # self.gamer.go(the_maze.at(Maze.start))
+        # self.gamer.goal = self.goal_cell
+        # the_maze.add_bod(self.gamer)
+
         the_maze.tk_init_things()
         the_maze.tk_init_bods(bods_window)
         the_maze.tk_paint()

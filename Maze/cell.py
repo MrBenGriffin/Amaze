@@ -84,9 +84,10 @@ class Cell:
             :return: list[Com] of available stairs.
         """
         if self.floors[com]:
-            cell = self.floors[com].cells[com.opposite]
-            if cell and cell.good_for_stairs():
-                walls.append(com)
+            if not self.floors[com.opposite] or self.floors[com.opposite].solid:
+                cell = self.floors[com].cells[com.opposite]
+                if cell and cell.good_for_stairs():
+                    walls.append(com)
         return walls
 
     def stairs(self):
@@ -100,7 +101,8 @@ class Cell:
         """
         :return: boolean representing if this cell is good for stairs to be built to.
         """
-        return not self.mined and len(self.level_walls_to_be_dug([])) > 0
+        # if self.floor
+        return not self.mined and not self.stairs() and len(self.level_walls_to_be_dug([])) > 0
 
     def walls_that_can_be_dug(self):
         """
@@ -113,8 +115,10 @@ class Cell:
             if not walls and Cell.last:  #
                 walls = self.stairs_to_be_dug(Cell.last, walls)
             if not walls:  #
-                walls = self.stairs_to_be_dug(Com.C, walls)
-                walls = self.stairs_to_be_dug(Com.F, walls)
+                cf = random.choice([Com.C, Com.F])
+                walls = self.stairs_to_be_dug(cf, walls)
+                if not walls:  #
+                    walls = self.stairs_to_be_dug(cf.opposite, walls)
         return walls
 
     def is_a_passage(self):

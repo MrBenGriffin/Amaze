@@ -54,11 +54,45 @@ class Maze:
             shape = self.polygons[self.cells[x, y, z]]
             self.scenes[z].addPath(shape.translated(QPointF(cx1, cy1)), pen)
 
-class MyDialog(QtWidgets.QDialog):
 
-    def __init__(self, form):
+class MyDialog(QtWidgets.QDialog):
+    """
+    Is the main application window, which is made of two parts:
+    One one side is the pane of tabs which display the maze
+    On the other are the configurable values of the maze (levels)
+    """
+    def __init__(self, pane, form):
+        self.pane = pane
         self.form = form
         self.horizontal_layout = None
+        super().__init__()
+
+    def resizeEvent(self, event):
+        self.pane.resize()
+        super().resizeEvent(event)
+
+    def setup(self):
+        self.setWindowTitle("Configure")
+        self.setObjectName("Dialog")
+        size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        size_policy.setHorizontalStretch(0)
+        size_policy.setVerticalStretch(0)
+        size_policy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
+        self.setSizePolicy(size_policy)
+        self.horizontal_layout = QtWidgets.QHBoxLayout(self)
+        self.horizontal_layout.setObjectName("horizontal_layout")
+
+        self.pane.setup(self, self.horizontal_layout)
+        self.form.setup(QtWidgets.QWidget(self), self.horizontal_layout)
+        self.pane.connect_form(self.form)
+
+
+class Pane:
+    def __init__(self):
+        self.parent = None
+        self.layout = None
+        self.form = None
+        self.tab_widget = None
         self.offset = 12
         self.demi = self.offset // 2
         self.tmp_idx = 0
@@ -69,20 +103,33 @@ class MyDialog(QtWidgets.QDialog):
         self.maze = None
         self.level_tabs = []
         self.level_gx = []
-        self.tab_widget = None
-        super().__init__()
+
+    def setup(self, parent, parent_layout):
+        self.parent = parent
+        self.layout = parent_layout
+        self.maze = Maze()
+        self.tab_widget = QtWidgets.QTabWidget(self.parent)
+        self.tab_widget.setMaximumSize(QtCore.QSize(160, 200))
+        self.tab_widget.setMinimumSize(QtCore.QSize(160, 200))
+        tab_widget_dim = QRect(0, 0, 360, 360)  # This is the size of the initial tab_widget
+        self.set_tab_widget(tab_widget_dim)
+
+    def connect_form(self, form):
+        self.form = form
+        self.form.set_values({'Size': self.cell_size, 'Levels': self.levels})
+        self.form.set_listen({'Size': self.resize, 'Levels': self.re_depth})
 
     def reset_tab_widget(self):
         self.tmp_idx = 0
         prev_widget = self.tab_widget
-        self.tab_widget = QtWidgets.QTabWidget(self)
+        self.tab_widget = QtWidgets.QTabWidget(self.parent)
         if prev_widget:
             self.tmp_idx = prev_widget.currentIndex()
-            self.horizontal_layout.replaceWidget(prev_widget, self.tab_widget)
+            self.parent.horizontal_layout.replaceWidget(prev_widget, self.tab_widget)
             prev_widget.clear()
             prev_widget.close()
         else:
-            self.horizontal_layout.addWidget(self.tab_widget)
+            self.parent.horizontal_layout.addWidget(self.tab_widget)
         self.tab_widget.setMinimumSize(QtCore.QSize(360, 380))
         self.tab_widget.setTabPosition(QtWidgets.QTabWidget.North)
         self.tab_widget.setObjectName("tab_widget")
@@ -94,6 +141,13 @@ class MyDialog(QtWidgets.QDialog):
                 gx.close()
             self.level_gx = []
             self.maze.scenes = []
+
+    def adjust_gx(self, gx, scene, frame):
+        gx.resize(int(frame.width()), int(frame.height()))
+        sx = self.width * Maze.normal + Maze.w_off
+        sy = self.height * Maze.normal + Maze.w_off
+        gx.fitInView(0, 0, sx, sy)
+        scene.setSceneRect(QRectF())
 
     def set_tab_widget(self, tab_widget_dim):
         self.reset_tab_widget()  # initialises / replaces a QTabWidget into the horizontal_layout
@@ -118,62 +172,26 @@ class MyDialog(QtWidgets.QDialog):
             self.adjust_gx(self.level_gx[idx], self.maze.scenes[idx], tab_widget_dim)
         self.tab_widget.setCurrentIndex(self.tmp_idx % self.levels)
 
-    def depth_change(self):
-        if self.level_tabs:
-            idx = self.tab_widget.currentIndex()
-            dt = QRect(self.level_tabs[idx].frameGeometry())
-            self.levels = self.form.fields['Levels'].value()
-            self.level_resize()
-
-    def level_resize(self):
+    def resize(self):
         self.tab_widget.hide()
         if self.level_tabs:  # These should exist..
             idx = self.tab_widget.currentIndex()
             dt = QRect(self.level_tabs[idx].frameGeometry())
-            self.cell_size = self.form.fields['Size'].value()
+            self.cell_size = self.form.get_value('Size')
             self.width = ceil((dt.width() - self.offset) // self.cell_size)
             self.height = ceil((dt.height() - self.offset) // self.cell_size)
-            self.form.fields['Width'].setText(f"{self.width}")
-            self.form.fields['Height'].setText(f"{self.height}")
+            self.form.set_texts({'Width': f"{self.width}", 'Height': f"{self.height}"})
             self.set_tab_widget(dt)
         self.tab_widget.show()
-        self.update()
+        self.parent.update()
 
-    def adjust_gx(self, gx, scene, frame):
-        # this frame is the tab container.
-        gx.resize(int(frame.width()), int(frame.height()))
-        sx = self.width * Maze.normal + Maze.w_off
-        sy = self.height * Maze.normal + Maze.w_off
-        gx.fitInView(0, 0, sx, sy)
-        scene.setSceneRect(QRectF())
-
-    def resizeEvent(self, event):
-        self.level_resize()
-        super().resizeEvent(event)
-
-    def setup(self):
-        self.maze = Maze()
-        self.setWindowTitle("Configure")
-        self.setObjectName("Dialog")
-        size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        size_policy.setHorizontalStretch(0)
-        size_policy.setVerticalStretch(0)
-        size_policy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
-        self.setSizePolicy(size_policy)
-        self.horizontal_layout = QtWidgets.QHBoxLayout(self)
-        self.horizontal_layout.setObjectName("horizontal_layout")
-        tab_widget_dim = QRect(0, 0, 360, 360)  # This is the size of the initial tab_widget
-        self.set_tab_widget(tab_widget_dim)
-        self.form.widget = QtWidgets.QWidget(self)
-        self.form.configure()
-        self.horizontal_layout.addWidget(self.form.widget)
-        self.form.fields['Size'].valueChanged.connect(self.level_resize)
-        self.form.fields['Levels'].valueChanged.connect(self.depth_change)
-        self.form.fields['Size'].setValue(self.cell_size)
-        self.form.fields['Levels'].setValue(self.levels)
+    def re_depth(self):
+        self.levels = self.form.get_value('Levels')
+        self.resize()
 
 
-class Form(object):
+
+class Form:
     def __init__(self):
         self.form = None
         self.widget = None
@@ -183,7 +201,8 @@ class Form(object):
         self.labels = []
         self.fields = {}
 
-    def configure(self):
+    def setup(self, widget, parent_layout):
+        self.widget = widget
         self.form = QtWidgets.QFormLayout(self.widget)
         self.form.setObjectName("form")
         self.widget.setMaximumSize(QtCore.QSize(160, 200))
@@ -208,12 +227,28 @@ class Form(object):
             label.setText(self.label_text[field])
             self.form.setWidget(field + 1, QtWidgets.QFormLayout.LabelRole, label)
             self.labels.append(label)
+        parent_layout.addWidget(self.widget)
+
+    def get_value(self, name):
+        return self.fields[name].value()
+
+    def set_values(self, config):
+        for k in config.keys():
+            self.fields[k].setValue(config[k])
+
+    def set_texts(self, config):
+        for k in config.keys():
+            self.fields[k].setText(config[k])
+
+    def set_listen(self, config):
+        for k in config.keys():
+            self.fields[k].valueChanged.connect(config[k])
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    dialog = MyDialog(Form())
+    dialog = MyDialog(Pane(), Form())
     dialog.setup()
     dialog.show()
     result = app.exec_()

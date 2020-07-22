@@ -1,6 +1,7 @@
 from itertools import product
+import networkx as nx
 from math import ceil
-from random import choices
+from random import shuffle, random
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QPen, QPainterPath
 from PyQt5.QtWidgets import QGraphicsScene, QTabWidget, QDialog, QWidget, QGraphicsView
@@ -8,7 +9,9 @@ from PyQt5.QtCore import Qt, QRect, QPointF
 
 
 class Art:
+    # a larger Y is actually further down the screen. You have been warned.
     normal = 100
+    iso = 0.433012701892219
     w_off = 2
     line = normal / 2
     t_l = QPointF(-line + w_off, -line + w_off)
@@ -16,42 +19,92 @@ class Art:
     b_r = QPointF(+line - w_off, +line - w_off)
     b_l = QPointF(-line + w_off, +line - w_off)
 
+    down_t = [QPointF(0, line * iso), QPointF(-line/2, -line * iso), QPointF(+line/2, -line * iso)]
+    up_t = [QPointF(0, - line * iso), QPointF(-line/2, line * iso), QPointF(+line/2, line * iso)]
+
     @staticmethod
     def _poly(edges):
         pt = [Art.t_r, Art.b_r, Art.b_l, Art.t_l]
         path = QPainterPath()
         path.moveTo(Art.t_l)
         for i in range(4):
-            path.lineTo(pt[i]) if edges[i] else path.moveTo(pt[i])
+            path.moveTo(pt[i]) if edges[i] else path.lineTo(pt[i])
+        if edges[4]:
+            path.moveTo(Art.up_t[0])
+            for pt in Art.up_t:
+                path.lineTo(pt)
+            path.lineTo(Art.up_t[0])
+        if edges[5]:
+            path.moveTo(Art.down_t[0])
+            for pt in Art.down_t:
+                path.lineTo(pt)
+            path.lineTo(Art.down_t[0])
         return path
 
     def __init__(self):
         self.x = 1
         self.y = 1
         self.z = 1
-        self.cells = {}
+        self.cells = None
         self.scenes = []
-        self.polygons = {x: self._poly(x) for x in product((False, True), repeat=4)}
+        self.polygons = {x: self._poly(x) for x in product((True, False), repeat=6)}
+        self.map = {
+            # X  Y  Z:    N      E      S     W       C      F
+            (-1, 0, 0): (False, False, False, True, False, False),
+            (0, -1, 0): (True, False, False, False, False, False),
+            (0, +1, 0): (False, False, True, False, False, False),
+            (+1, 0, 0): (False, True, False, False, False, False),
+            (0, 0, -1): (False, False, False, False, True, False),
+            (0, 0, +1): (False, False, False, False, False, True)
+        }
 
     def reset(self, x, y, z):
         self.x = x
         self.y = y
         self.z = z
-        self.cells = {tuple((ix, iy, iz)): tuple(choices([True, False], k=4))
-                      for ix in range(self.x)
-                      for iy in range(self.y)
-                      for iz in range(self.z)
-                      }
+        #     No idea why it would be loaded backwards.. but it is.
+        self.cells = nx.grid_graph(dim=[z, y, x])
+        self.mine((0, 0, 0))
         for scene in self.scenes:
             scene.clear()
 
     def draw(self):
-        pen = QPen(Qt.black, 2, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
-        for x, y, z in self.cells:
+        pen = QPen(Qt.black, 1, Qt.SolidLine)
+        for cell in self.cells:
+            x, y, z = cell
             cx1 = x * Art.normal
             cy1 = y * Art.normal
-            shape = self.polygons[self.cells[x, y, z]]
+            edges = self.cells[cell]
+            offset = [self.map[e[0] - x, e[1] - y, e[2] - z] for e in edges]
+            exits = tuple(any([j[i] for j in offset]) for i in range(6))
+            shape = self.polygons[exits]
             self.scenes[z].addPath(shape.translated(QPointF(cx1, cy1)), pen)
+
+    def mine(self, start):
+        """
+        Not the greatest of mining algorithms!
+        The main problem is the very many single cell branches.
+        But, for no trace-back, it's not too shabby!
+        """
+        mined = set()           # all cells that have been visited go here
+        planned = set()         # this contains all tiles to be visited.
+        pending = [(start, None)]   # random list of tuples of planned with where they were nominated from.
+        while pending:
+            current, previous = pending.pop()  # pop the list from the active.
+            mined.add(current)      # mark this as mined.
+            neighbours = [x for x in self.cells[current]]  # find the neighbours to this
+            for neighbour in neighbours:  # for each neighbour we have...
+                if neighbour in mined or neighbour in planned:  # if it's mined we want to delete the path to it..
+                    if neighbour != previous:   # ..unless it's where we came from.
+                        self.cells.remove_edge(current, neighbour)
+                else:
+                    if neighbour not in planned:  # if it is unknown...
+                        add_on = (neighbour, current)
+                        planned.add(neighbour)
+                        pending.append(add_on)
+            shuffle(pending)
+            if current in planned:
+                planned.remove(current)
 
 
 class MyDialog(QDialog):
@@ -60,6 +113,7 @@ class MyDialog(QDialog):
     One one side is the pane of tabs which display the maze
     On the other are the configurable values of the maze (levels)
     """
+
     def __init__(self):
         self.pane = None
         self.form = None
@@ -89,17 +143,17 @@ class MyDialog(QDialog):
 
 class Pane:
     def __init__(self, parent):
-        self.parent = parent    # This is the widget.
-        self.layout = None      # This is the parent's layout.
-        self.form = None        # This is the form used to control things.
+        self.parent = parent  # This is the widget.
+        self.layout = None  # This is the parent's layout.
+        self.form = None  # This is the form used to control things.
         self.tab_group = None  # This is the tab widget, which can be fully replaced.
         # Everything below are default values.
         self.offset = 12
         self.demi = self.offset // 2
         self.loop_idx = 0
-        self.levels = 4
-        self.width = 0
-        self.height = 0
+        self.levels = 5
+        self.width = 3
+        self.height = 4
         self.cell_size = 100
         self.art = None
 
@@ -122,13 +176,12 @@ class Pane:
         self.art.reset(self.width, self.height, self.levels)
         self.art.draw()
         self.loop_idx = self.tab_group.tmp_idx % self.levels
-        # QtCore.QTimer.singleShot(0, self.adjust_gx)
         self.tab_group.setCurrentIndex(self.loop_idx)
 
     def resize(self, always=False):
         if self.tab_group:
             dim = self.tab_group.update_dim()
-            self.cell_size = self.form.get_value('Size')
+            self.cell_size = max(16, self.form.get_value('Size'))
             new_width = ceil((dim.width() - self.offset) // self.cell_size)
             new_height = ceil((dim.height() - self.offset) // self.cell_size)
             self.tab_group.hide()
@@ -149,7 +202,7 @@ class TabItem(QWidget):
     def __init__(self, parent, idx, scene):
         self.parent = parent
         self.idx = idx
-        self.name = f"{idx+1}"
+        self.name = f"{idx + 1}"
         self.scene = scene
         self.view = None
         super().__init__()
@@ -159,8 +212,8 @@ class TabItem(QWidget):
         self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.view.setMinimumSize(QtCore.QSize(340, 340))
-        self.view.setObjectName(f"view_{idx+1}")
-        self.setObjectName(f"tab_{idx+1}")
+        self.view.setObjectName(f"view_{idx + 1}")
+        self.setObjectName(f"tab_{idx + 1}")
 
     def showEvent(self, show_event=None):
         self.view.resize(self.parent.dim.width(), self.parent.dim.height())
@@ -275,6 +328,7 @@ class Form(QtWidgets.QWidget):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     dialog = MyDialog()
     dialog.setup()

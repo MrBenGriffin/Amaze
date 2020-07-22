@@ -1,26 +1,26 @@
 from itertools import product
-from math import floor, ceil
+from math import ceil
 from random import choices
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QPen, QPainterPath, QPainter, QTransform
-from PyQt5.QtWidgets import QGraphicsScene
-from PyQt5.QtCore import Qt, QRect, QPointF, QRectF
+from PyQt5.QtGui import QPen, QPainterPath
+from PyQt5.QtWidgets import QGraphicsScene, QTabWidget, QDialog, QWidget, QGraphicsView
+from PyQt5.QtCore import Qt, QRect, QPointF
 
 
-class Wall:
-    def __init__(self):
-        pass
-
-
-class Maze:
+class Art:
     normal = 100
     w_off = 2
+    line = normal / 2
+    t_l = QPointF(-line + w_off, -line + w_off)
+    t_r = QPointF(+line - w_off, -line + w_off)
+    b_r = QPointF(+line - w_off, +line - w_off)
+    b_l = QPointF(-line + w_off, +line - w_off)
 
-    def _poly(self, edges):
-        len = Maze.normal - Maze.w_off / 2
-        pt = [QPointF(0, len), QPointF(len, len), QPointF(len, 0), QPointF(0, 0)]
+    @staticmethod
+    def _poly(edges):
+        pt = [Art.t_r, Art.b_r, Art.b_l, Art.t_l]
         path = QPainterPath()
-        path.moveTo(0, 0)
+        path.moveTo(Art.t_l)
         for i in range(4):
             path.lineTo(pt[i]) if edges[i] else path.moveTo(pt[i])
         return path
@@ -37,8 +37,7 @@ class Maze:
         self.x = x
         self.y = y
         self.z = z
-
-        self.cells = {tuple((ix, iy, iz)): tuple(choices([True, False], k=4))  # N S E W | C F
+        self.cells = {tuple((ix, iy, iz)): tuple(choices([True, False], k=4))
                       for ix in range(self.x)
                       for iy in range(self.y)
                       for iz in range(self.z)
@@ -46,24 +45,24 @@ class Maze:
         for scene in self.scenes:
             scene.clear()
 
-    def draw(self, scene_offset, scale):
-        pen = QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
+    def draw(self):
+        pen = QPen(Qt.black, 2, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
         for x, y, z in self.cells:
-            cx1 = scene_offset + self.w_off + x * Maze.normal
-            cy1 = scene_offset + self.w_off + y * Maze.normal
+            cx1 = x * Art.normal
+            cy1 = y * Art.normal
             shape = self.polygons[self.cells[x, y, z]]
             self.scenes[z].addPath(shape.translated(QPointF(cx1, cy1)), pen)
 
 
-class MyDialog(QtWidgets.QDialog):
+class MyDialog(QDialog):
     """
     Is the main application window, which is made of two parts:
     One one side is the pane of tabs which display the maze
     On the other are the configurable values of the maze (levels)
     """
-    def __init__(self, pane, form):
-        self.pane = pane
-        self.form = form
+    def __init__(self):
+        self.pane = None
+        self.form = None
         self.horizontal_layout = None
         super().__init__()
 
@@ -72,6 +71,8 @@ class MyDialog(QtWidgets.QDialog):
         super().resizeEvent(event)
 
     def setup(self):
+        self.pane = Pane(self)
+        self.form = Form(self)
         self.setWindowTitle("Configure")
         self.setObjectName("Dialog")
         size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -81,153 +82,179 @@ class MyDialog(QtWidgets.QDialog):
         self.setSizePolicy(size_policy)
         self.horizontal_layout = QtWidgets.QHBoxLayout(self)
         self.horizontal_layout.setObjectName("horizontal_layout")
-
-        self.pane.setup(self, self.horizontal_layout)
-        self.form.setup(QtWidgets.QWidget(self), self.horizontal_layout)
+        self.pane.setup(self.horizontal_layout)
+        self.form.setup(self.horizontal_layout)
         self.pane.connect_form(self.form)
 
 
 class Pane:
-    def __init__(self):
-        self.parent = None
-        self.layout = None
-        self.form = None
-        self.tab_widget = None
+    def __init__(self, parent):
+        self.parent = parent    # This is the widget.
+        self.layout = None      # This is the parent's layout.
+        self.form = None        # This is the form used to control things.
+        self.tab_group = None  # This is the tab widget, which can be fully replaced.
+        # Everything below are default values.
         self.offset = 12
         self.demi = self.offset // 2
-        self.tmp_idx = 0
+        self.loop_idx = 0
         self.levels = 4
-        self.width = 3
-        self.height = 3
+        self.width = 0
+        self.height = 0
         self.cell_size = 100
-        self.maze = None
-        self.level_tabs = []
-        self.level_gx = []
+        self.art = None
 
-    def setup(self, parent, parent_layout):
-        self.parent = parent
+    def setup(self, parent_layout):
         self.layout = parent_layout
-        self.maze = Maze()
-        self.tab_widget = QtWidgets.QTabWidget(self.parent)
-        self.tab_widget.setMaximumSize(QtCore.QSize(160, 200))
-        self.tab_widget.setMinimumSize(QtCore.QSize(160, 200))
-        tab_widget_dim = QRect(0, 0, 360, 360)  # This is the size of the initial tab_widget
-        self.set_tab_widget(tab_widget_dim)
+        self.art = Art()
+        self.tab_group = TabGroup(self.parent, self.layout, self.art)
+        self.set_tab_widget()
 
     def connect_form(self, form):
         self.form = form
         self.form.set_values({'Size': self.cell_size, 'Levels': self.levels})
         self.form.set_listen({'Size': self.resize, 'Levels': self.re_depth})
 
-    def reset_tab_widget(self):
-        self.tmp_idx = 0
-        prev_widget = self.tab_widget
-        self.tab_widget = QtWidgets.QTabWidget(self.parent)
-        if prev_widget:
-            self.tmp_idx = prev_widget.currentIndex()
-            self.parent.horizontal_layout.replaceWidget(prev_widget, self.tab_widget)
-            prev_widget.clear()
-            prev_widget.close()
-        else:
-            self.parent.horizontal_layout.addWidget(self.tab_widget)
-        self.tab_widget.setMinimumSize(QtCore.QSize(360, 380))
-        self.tab_widget.setTabPosition(QtWidgets.QTabWidget.North)
-        self.tab_widget.setObjectName("tab_widget")
-        if self.maze:
-            for lt in self.level_tabs:
-                lt.close()
-            self.level_tabs = []
-            for gx in self.level_gx:
-                gx.close()
-            self.level_gx = []
-            self.maze.scenes = []
-
-    def adjust_gx(self, gx, scene, frame):
-        gx.resize(int(frame.width()), int(frame.height()))
-        sx = self.width * Maze.normal + Maze.w_off
-        sy = self.height * Maze.normal + Maze.w_off
-        gx.fitInView(0, 0, sx, sy)
-        scene.setSceneRect(QRectF())
-
-    def set_tab_widget(self, tab_widget_dim):
-        self.reset_tab_widget()  # initialises / replaces a QTabWidget into the horizontal_layout
+    def set_tab_widget(self):
+        self.tab_group.reset()  # initialises / replaces a QTabWidget into the horizontal_layout
         for level in range(self.levels):
-            tab = QtWidgets.QWidget()
-            tab.setObjectName(f"T{level}")
-            self.tab_widget.addTab(tab, f"{level + 1}")
-            self.level_tabs.append(tab)
-            scene = QGraphicsScene()
-            self.maze.scenes.append(scene)
-            tab.resize(tab_widget_dim.width(), tab_widget_dim.height())
-            gv = QtWidgets.QGraphicsView(scene, tab)
-            gv.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            gv.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-            gv.setMinimumSize(QtCore.QSize(340, 340))
-            gv.setObjectName(f"L{level}")
-            self.level_gx.append(gv)
-            self.adjust_gx(gv, scene, tab_widget_dim)
-        self.maze.reset(self.width, self.height, self.levels)
-        self.maze.draw(self.demi, self.cell_size)
-        for idx in range(self.levels):
-            self.adjust_gx(self.level_gx[idx], self.maze.scenes[idx], tab_widget_dim)
-        self.tab_widget.setCurrentIndex(self.tmp_idx % self.levels)
+            tab = self.tab_group.add(level)
 
-    def resize(self):
-        self.tab_widget.hide()
-        if self.level_tabs:  # These should exist..
-            idx = self.tab_widget.currentIndex()
-            dt = QRect(self.level_tabs[idx].frameGeometry())
+        self.art.reset(self.width, self.height, self.levels)
+        self.art.draw()
+        self.loop_idx = self.tab_group.tmp_idx % self.levels
+        # QtCore.QTimer.singleShot(0, self.adjust_gx)
+        self.tab_group.setCurrentIndex(self.loop_idx)
+
+    def resize(self, always=False):
+        if self.tab_group:
+            dim = self.tab_group.update_dim()
             self.cell_size = self.form.get_value('Size')
-            self.width = ceil((dt.width() - self.offset) // self.cell_size)
-            self.height = ceil((dt.height() - self.offset) // self.cell_size)
-            self.form.set_texts({'Width': f"{self.width}", 'Height': f"{self.height}"})
-            self.set_tab_widget(dt)
-        self.tab_widget.show()
-        self.parent.update()
+            new_width = ceil((dim.width() - self.offset) // self.cell_size)
+            new_height = ceil((dim.height() - self.offset) // self.cell_size)
+            if (new_width != self.width) or (new_height != self.height) or always:
+                self.tab_group.hide()
+                self.width = new_width
+                self.height = new_height
+                self.form.set_texts({'Width': f"{self.width}", 'Height': f"{self.height}"})
+                self.set_tab_widget()
+                self.tab_group.show()
+            self.parent.update()
 
     def re_depth(self):
         self.levels = self.form.get_value('Levels')
-        self.resize()
+        self.resize(True)
 
 
+class TabItem(QWidget):
+    def __init__(self, parent, idx, scene):
+        self.parent = parent
+        self.idx = idx
+        self.name = f"{idx+1}"
+        self.scene = scene
+        self.view = None
+        super().__init__()
 
-class Form:
-    def __init__(self):
+        # View should probably be sub-classed also...
+        self.view = QGraphicsView(scene, self)
+        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.view.setMinimumSize(QtCore.QSize(340, 340))
+        self.view.setObjectName(f"view_{idx+1}")
+        self.setObjectName(f"tab_{idx+1}")
+
+    def showEvent(self, show_event):
+        self.view.resize(self.parent.dim.width(), self.parent.dim.height())
+        boundary = self.scene.itemsBoundingRect()
+        self.view.fitInView(boundary, Qt.KeepAspectRatio)
+        self.scene.setSceneRect(boundary)
+        super().showEvent(show_event)
+
+    def close(self):
+        if self.view:
+            self.view.close()
+        if self.scene:
+            self.scene.clear()
+        super().close()
+
+
+class TabGroup(QTabWidget):
+    def __init__(self, parent, layout, art):
+        self.dim = QRect(0, 0, 360, 380)  # This is the size of the initial tab_widget
+        self.tmp_idx = 0
+        self.layout = layout
+        self.art = art
+        self.tabs = []
+        super().__init__(parent)
+        self.setMinimumSize(QtCore.QSize(360, 380))
+        self.setTabPosition(QTabWidget.North)
+        self.layout.addWidget(self)
+
+    def reset(self):
+        self.dim = self.update_dim()
+        self.tmp_idx = self.currentIndex()
+        for tab in self.tabs:
+            tab.close()
+        self.tabs = []
+        self.clear()
+        self.art.scenes = []
+        # super().close()
+
+    def add(self, idx):
+        scene = QGraphicsScene()
+        tab = TabItem(self, idx, scene)
+        self.addTab(tab, tab.name)
+        tab.resize(self.dim.width(), self.dim.height())
+        if len(self.tabs) > idx:
+            self.tabs[idx] = tab
+            self.art.scenes[idx] = scene
+        else:
+            self.tabs.append(tab)
+            self.art.scenes.append(scene)
+
+    def update_dim(self):
+        if self.tabs:
+            idx = self.currentIndex()
+            self.dim = QRect(self.tabs[idx].frameGeometry())
+        return self.dim
+
+
+class Form(QtWidgets.QWidget):
+    def __init__(self, parent):
+        self.parent = parent
         self.form = None
-        self.widget = None
         self.label_text = ('Levels', 'Size', 'Width', 'Height')
         self.minimums = (1, 16)
         self.maximums = (20, 320)
         self.labels = []
         self.fields = {}
+        super().__init__(self.parent)
 
-    def setup(self, widget, parent_layout):
-        self.widget = widget
-        self.form = QtWidgets.QFormLayout(self.widget)
+    def setup(self, parent_layout):
+        self.form = QtWidgets.QFormLayout(self)
         self.form.setObjectName("form")
-        self.widget.setMaximumSize(QtCore.QSize(160, 200))
-        self.widget.setMinimumSize(QtCore.QSize(160, 200))
+        self.setMaximumSize(QtCore.QSize(160, 200))
+        self.setMinimumSize(QtCore.QSize(160, 200))
 
         # Create the fields within the form layout
         for field in range(4):
             if field < 2:
-                ui = QtWidgets.QSpinBox(self.widget)
+                ui = QtWidgets.QSpinBox(self)
                 ui.setMinimum(self.minimums[field])
                 ui.setMaximum(self.maximums[field])
                 ui.setMinimumSize(QtCore.QSize(60, 0))
                 ui.setObjectName(f"f_{field}")
             else:
-                ui = QtWidgets.QLabel(self.widget)
+                ui = QtWidgets.QLabel(self)
                 ui.setObjectName(f"f_{field}")
                 ui.setText(f"{0}")
             self.form.setWidget(field + 1, QtWidgets.QFormLayout.FieldRole, ui)
             self.fields[self.label_text[field]] = ui
-            label = QtWidgets.QLabel(self.widget)
+            label = QtWidgets.QLabel(self)
             label.setObjectName(f"label_{field}")
             label.setText(self.label_text[field])
             self.form.setWidget(field + 1, QtWidgets.QFormLayout.LabelRole, label)
             self.labels.append(label)
-        parent_layout.addWidget(self.widget)
+        parent_layout.addWidget(self)
 
     def get_value(self, name):
         return self.fields[name].value()
@@ -248,8 +275,7 @@ class Form:
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    dialog = MyDialog(Pane(), Form())
+    dialog = MyDialog()
     dialog.setup()
     dialog.show()
     result = app.exec_()
-    pass

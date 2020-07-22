@@ -131,13 +131,13 @@ class Pane:
             self.cell_size = self.form.get_value('Size')
             new_width = ceil((dim.width() - self.offset) // self.cell_size)
             new_height = ceil((dim.height() - self.offset) // self.cell_size)
+            self.tab_group.hide()
             if (new_width != self.width) or (new_height != self.height) or always:
-                self.tab_group.hide()
                 self.width = new_width
                 self.height = new_height
                 self.form.set_texts({'Width': f"{self.width}", 'Height': f"{self.height}"})
                 self.set_tab_widget()
-                self.tab_group.show()
+            self.tab_group.show()
             self.parent.update()
 
     def re_depth(self):
@@ -162,12 +162,13 @@ class TabItem(QWidget):
         self.view.setObjectName(f"view_{idx+1}")
         self.setObjectName(f"tab_{idx+1}")
 
-    def showEvent(self, show_event):
+    def showEvent(self, show_event=None):
         self.view.resize(self.parent.dim.width(), self.parent.dim.height())
         boundary = self.scene.itemsBoundingRect()
         self.view.fitInView(boundary, Qt.KeepAspectRatio)
         self.scene.setSceneRect(boundary)
-        super().showEvent(show_event)
+        if show_event:
+            super().showEvent(show_event)
 
     def close(self):
         if self.view:

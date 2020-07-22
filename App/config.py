@@ -11,15 +11,15 @@ class Config:
         # self.cell_size = 48
 
         # Good Starter
-        # self.maze_width = 35
-        # self.maze_height = 5
-        # self.maze_levels = 4
-        # self.cell_size = 96
+        self.maze_width = 35
+        self.maze_height = 5
+        self.maze_levels = 3
+        self.cell_size = 40
 
-        self.maze_width = 54
-        self.maze_height = 8
-        self.maze_levels = 4
-        self.cell_size = 60
+        # self.maze_width = 54
+        # self.maze_height = 8
+        # self.maze_levels = 4
+        # self.cell_size = 60
 
         self.action_on_submit = action_on_submit
         self._root = tk_root

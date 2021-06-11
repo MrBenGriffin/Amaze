@@ -110,8 +110,8 @@ class Wall:
         if self.level.tk_level:
             if self.is_wall():
                 self.id = self.level.tk_level.create_line(self.solid, width=2)
-            else:
-                self.id = self.level.tk_level.create_line(self.solid, width=2, state=HIDDEN)
+            # else:
+            #     self.id = self.level.tk_level.create_line(self.solid, width=5, state=HIDDEN)
 
 
 class Floor:

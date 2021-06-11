@@ -4,11 +4,11 @@ from tkinter import *
 class Config:
 
     def __init__(self, tk_root, action_on_submit):
-
-        # self.maze_width = 70
-        # self.maze_height = 10
-        # self.maze_levels = 4
-        # self.cell_size = 48
+        # Small Tough
+        self.maze_width = 70
+        self.maze_height = 10
+        self.maze_levels = 4
+        self.cell_size = 48
 
         # Good Starter
         # self.maze_width = 35
@@ -16,10 +16,11 @@ class Config:
         # self.maze_levels = 4
         # self.cell_size = 96
 
-        self.maze_width = 54
-        self.maze_height = 8
-        self.maze_levels = 4
-        self.cell_size = 60
+        # Good Medium
+        # self.maze_width = 54
+        # self.maze_height = 8
+        # self.maze_levels = 4
+        # self.cell_size = 60
 
         self.action_on_submit = action_on_submit
         self._root = tk_root

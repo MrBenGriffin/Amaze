@@ -11,8 +11,13 @@ class Config:
         self.cell_size = 48
 
         # Good Starter
-        # self.maze_width = 35
-        # self.maze_height = 5
+        self.maze_width = 35
+        self.maze_height = 5
+        self.maze_levels = 3
+        self.cell_size = 40
+
+        # self.maze_width = 54
+        # self.maze_height = 8
         # self.maze_levels = 4
         # self.cell_size = 96
 

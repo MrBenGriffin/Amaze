@@ -1,5 +1,6 @@
 # Amaze
 ![Maze](assets/logo.png)
+[![trophy](https://github-profile-trophy.vercel.app/?username= MrBenGriffin)](https://github.com/ryo-ma/github-profile-trophy)
 
 A Simple learning project.
 
